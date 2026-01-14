@@ -15,293 +15,257 @@
 
         body {
             margin: 0; padding: 0; background: var(--bg); color: var(--text);
-            font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden;
-            background-image: radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; overflow: hidden;
+            background-image: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.1) 0%, transparent 50%);
         }
 
-        header { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .balance-panel { text-align: center; padding: 15px 0; background: rgba(0,0,0,0.2); }
-        .points-display { font-size: 2.8rem; font-weight: 900; text-shadow: 0 0 15px var(--cyan); margin: 0; }
+        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .stat-banner { text-align: center; padding: 15px 0; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .credits-val { font-size: 2.5rem; font-weight: 900; color: white; text-shadow: 0 0 10px var(--cyan); margin: 0; }
 
-        .view { display: none; flex-direction: column; gap: 12px; padding: 15px; overflow-y: auto; height: calc(100vh - 240px); padding-bottom: 100px; }
+        .view { display: none; flex-direction: column; gap: 15px; padding: 15px; overflow-y: auto; height: calc(100vh - 250px); padding-bottom: 100px; }
         .view.active { display: flex; }
 
-        /* General Tiles */
-        .tile { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; }
-        .tile:active { transform: scale(0.98); }
-        .tile-icon { width: 45px; height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 1px solid; }
-
-        /* Pet HUD */
-        .pet-hud { background: rgba(255,255,255,0.03); border-radius: 20px; padding: 15px; text-align: center; border: 1px dashed rgba(34, 211, 238, 0.3); }
-        .pet-emoji { font-size: 4rem; margin-bottom: 5px; filter: drop-shadow(0 0 10px var(--cyan)); }
-        .bar-container { width: 100%; height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden; margin: 8px 0; }
-        .bar-fill { height: 100%; background: var(--green); transition: 0.4s; }
-
-        /* Common Buttons */
-        .btn { background: var(--purple); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; }
+        /* UI Blocks */
+        .tile { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 15px; display: flex; align-items: center; gap: 15px; }
+        .btn { background: var(--purple); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.95); }
         .btn.owned { background: #334155; color: #94a3b8; }
-        .btn-feed { background: var(--green); width: auto; padding: 6px 15px; font-size: 0.7rem; }
 
-        /* Game Overlays */
-        #game-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; display: none; flex-direction: column; }
-        .wheel-box { position: relative; width: 280px; height: 280px; margin: 10px auto; }
-        #canvas-wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--gold); transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); }
-        .pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid var(--gold); z-index: 10; }
+        /* Pet Section */
+        .pet-container { background: rgba(255,255,255,0.03); border: 1px solid rgba(34, 211, 238, 0.2); border-radius: 24px; padding: 20px; text-align: center; margin-bottom: 10px; }
+        .pet-visual { font-size: 4.5rem; filter: drop-shadow(0 0 15px var(--cyan)); margin-bottom: 10px; }
+        .hunger-track { width: 100%; height: 10px; background: #1e293b; border-radius: 5px; overflow: hidden; margin: 10px 0; border: 1px solid rgba(255,255,255,0.1); }
+        .hunger-fill { height: 100%; background: linear-gradient(90deg, var(--green), #bbf7d0); transition: 0.5s ease-out; }
+
+        /* Overlays */
+        #game-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; display: none; flex-direction: column; }
+        .wheel-shell { position: relative; width: 280px; height: 280px; margin: 20px auto; }
+        #wheel-canvas { width: 100%; height: 100%; border-radius: 50%; border: 5px solid var(--gold); transition: transform 4s cubic-bezier(0.1, 0, 0.2, 1); }
+        .wheel-arrow { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 35px solid var(--gold); z-index: 10; }
 
         /* Navbar */
-        .navbar { position: fixed; bottom: 0; width: 100%; display: flex; background: #0f172a; padding: 10px 0 30px; border-top: 1px solid rgba(255,255,255,0.1); }
-        .nav-item { flex: 1; text-align: center; color: #64748b; background: none; border: none; font-size: 0.6rem; }
-        .nav-item.active { color: var(--cyan); }
-        .nav-item i { font-size: 1.3rem; display: block; margin-bottom: 4px; }
+        .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #0f172a; padding: 12px 0 35px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .nav-btn { flex: 1; text-align: center; color: #64748b; background: none; border: none; font-size: 0.65rem; font-weight: bold; }
+        .nav-btn.active { color: var(--cyan); }
+        .nav-btn i { font-size: 1.4rem; display: block; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <header>
-        <div id="user-tag">@PLAYER</div>
-        <div style="color:var(--green); font-size:0.7rem;"><i class="fa-solid fa-signal"></i> LIVE</div>
+        <div id="display-user">@PLAYER</div>
+        <div style="color:var(--green); font-size:0.7rem;">ARCADE v2.0</div>
     </header>
 
-    <div class="balance-panel">
-        <div style="font-size:0.6rem; color:var(--cyan); letter-spacing:2px;">CREDITS</div>
-        <div class="points-display" id="stat-points">0</div>
+    <div class="stat-banner">
+        <div style="font-size:0.7rem; color:var(--cyan); letter-spacing:2px; font-weight:bold;">BALANCE</div>
+        <div class="credits-val" id="count-pts">0</div>
     </div>
 
     <div id="view-hub" class="view active">
-        <div class="pet-hud">
-            <div id="pet-icon" class="pet-emoji">🤖</div>
-            <h4 id="pet-name" style="margin:0;">Arcade Bot</h4>
-            <div class="bar-container"><div id="hunger-bar" class="bar-fill"></div></div>
-            <button class="btn btn-feed" onclick="feedPet()">FEED (50 PTS)</button>
+        <div class="pet-container">
+            <div id="main-pet-icon" class="pet-visual">🤖</div>
+            <h3 id="main-pet-name" style="margin:0;">Arcade Bot</h3>
+            <div class="hunger-track"><div id="hunger-bar" class="hunger-fill"></div></div>
+            <button class="btn" style="width: auto; padding: 8px 20px; background:var(--green);" onclick="giveFood()">FEED (50 PTS)</button>
         </div>
 
         <div class="tile" onclick="openGame('wheel')">
-            <div class="tile-icon" style="color:var(--gold); border-color:var(--gold);"><i class="fa-solid fa-dharmachakra"></i></div>
-            <div><h4 style="margin:0;">LUCKY WHEEL</h4><p style="margin:0; font-size:0.6rem; opacity:0.6;">Cost: 250 PTS</p></div>
-        </div>
-        <div class="tile" onclick="openGame('tap')">
-            <div class="tile-icon" style="color:var(--cyan); border-color:var(--cyan);"><i class="fa-solid fa-hand-pointer"></i></div>
-            <div><h4 style="margin:0;">CORE CLICKER</h4><p style="margin:0; font-size:0.6rem; opacity:0.6;">Manual mining</p></div>
+            <i class="fa-solid fa-dharmachakra" style="color:var(--gold); font-size:1.8rem;"></i>
+            <div><h4 style="margin:0;">LUCKY WHEEL</h4><p style="margin:0; font-size:0.7rem; opacity:0.6;">Try your luck - 250 PTS</p></div>
         </div>
         <div class="tile" onclick="openGame('plinko')">
-            <div class="tile-icon" style="color:var(--purple); border-color:var(--purple);"><i class="fa-solid fa-braille"></i></div>
-            <div><h4 style="margin:0;">PLINKO DROPS</h4><p style="margin:0; font-size:0.6rem; opacity:0.6;">Physics game</p></div>
+            <i class="fa-solid fa-circle-dot" style="color:var(--purple); font-size:1.8rem;"></i>
+            <div><h4 style="margin:0;">PLINKO</h4><p style="margin:0; font-size:0.7rem; opacity:0.6;">Drop for rewards</p></div>
+        </div>
+        <div class="tile" onclick="openGame('tap')">
+            <i class="fa-solid fa-fingerprint" style="color:var(--cyan); font-size:1.8rem;"></i>
+            <div><h4 style="margin:0;">CORE MINER</h4><p style="margin:0; font-size:0.7rem; opacity:0.6;">Manual click earn</p></div>
         </div>
     </div>
 
-    <div id="view-store" class="view">
-        <h3 style="color:var(--purple); margin:0;">PET EXCHANGE</h3>
-        <div id="store-pets" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+    <div id="view-shop" class="view">
+        <h3 style="color:var(--purple); margin:0;">PET MARKET</h3>
+        <div id="pet-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
         
         <h3 style="color:var(--cyan); margin:15px 0 5px 0;">UPGRADES</h3>
-        <div id="store-items" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+        <div id="item-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
     </div>
 
     <div id="view-earn" class="view">
         <div class="tile" style="flex-direction:column; align-items:flex-start;">
-            <h4 style="margin:0 0 10px 0;">REDEEM VOUCHER</h4>
-            <input type="text" id="voucher-in" placeholder="Code..." style="width:90%; padding:10px; background:rgba(0,0,0,0.3); border:1px solid var(--purple); color:white; border-radius:8px; margin-bottom:10px;">
-            <button class="btn" onclick="redeem()">ACTIVATE</button>
+            <h4 style="margin:0;">VOUCHER CODE</h4>
+            <input type="text" id="code-in" placeholder="Enter Code..." style="width:90%; padding:12px; background:rgba(0,0,0,0.4); border:1px solid var(--purple); color:white; border-radius:10px; margin:10px 0;">
+            <button class="btn" onclick="redeemCode()">ACTIVATE</button>
         </div>
     </div>
 
     <div id="view-gear" class="view">
-        <h3 style="color:var(--pink); margin:0;">MY INVENTORY</h3>
-        <div id="gear-container" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+        <h3 style="color:var(--pink); margin:0;">MY GEAR</h3>
+        <div id="gear-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
     </div>
 
-    <div id="game-overlay">
-        <div style="padding:20px; font-weight:bold;" onclick="closeGame()"><i class="fa-solid fa-chevron-left"></i> HUB</div>
-        <div id="game-canvas-area" style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;"></div>
+    <div id="game-screen">
+        <div style="padding:20px; font-weight:bold;" onclick="exitGame()"><i class="fa-solid fa-xmark"></i> CLOSE</div>
+        <div id="screen-content" style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;"></div>
     </div>
 
-    <nav class="navbar">
-        <button class="nav-item active" onclick="showTab('hub', this)"><i class="fa-solid fa-house"></i>HUB</button>
-        <button class="nav-item" onclick="showTab('store', this)"><i class="fa-solid fa-shop"></i>SHOP</button>
-        <button class="nav-item" onclick="showTab('earn', this)"><i class="fa-solid fa-gift"></i>EARN</button>
-        <button class="nav-item" onclick="showTab('gear', this)"><i class="fa-solid fa-box"></i>GEAR</button>
+    <nav class="nav">
+        <button class="nav-btn active" onclick="tab('hub', this)"><i class="fa-solid fa-gamepad"></i>PLAY</button>
+        <button class="nav-btn" onclick="tab('shop', this)"><i class="fa-solid fa-cart-shopping"></i>SHOP</button>
+        <button class="nav-btn" onclick="tab('earn', this)"><i class="fa-solid fa-bolt"></i>EARN</button>
+        <button class="nav-btn" onclick="tab('gear', this)"><i class="fa-solid fa-box-open"></i>GEAR</button>
     </nav>
 
 <script>
     const tg = window.Telegram.WebApp;
     let credits = parseInt(localStorage.getItem('credits')) || 5000;
-    let inv = JSON.parse(localStorage.getItem('inv')) || [{id:'p1', name:'Bot', icon:'🤖', type:'pet'}];
-    let activePet = JSON.parse(localStorage.getItem('activePet')) || inv[0];
+    let inventory = JSON.parse(localStorage.getItem('inventory')) || [{id:'p1', name:'Arcade Bot', icon:'🤖', type:'pet'}];
+    let activePet = JSON.parse(localStorage.getItem('activePet')) || inventory[0];
     let hunger = parseInt(localStorage.getItem('hunger')) || 100;
     let spinning = false;
-    let plinkoActive = false;
 
-    const PETS_DATA = [
+    const PETS = [
         { id: 'p2', name: 'Cyber Cat', price: 5000, icon: '🐱', type: 'pet' },
-        { id: 'p3', name: 'Neon Dog', price: 8000, icon: '🐶', type: 'pet' },
-        { id: 'p4', name: 'Robo Dragon', price: 25000, icon: '🐲', type: 'pet' }
+        { id: 'p3', name: 'Neon Dog', price: 10000, icon: '🐶', type: 'pet' },
+        { id: 'p4', name: 'Robo Dragon', price: 50000, icon: '🐲', type: 'pet' }
     ];
 
-    const ITEMS_DATA = [
-        { id: 'i1', name: 'Power Module', price: 10000, icon: 'fa-microchip', type: 'item', desc: 'x3 Click Power' },
-        { id: 'i2', name: 'Luck Matrix', price: 5000, icon: 'fa-shield-heart', type: 'item', desc: 'Prevents Loss' }
+    const ITEMS = [
+        { id: 'u1', name: 'Super Chip', price: 15000, icon: 'fa-microchip', type: 'item', desc: 'x5 Click Multi' },
+        { id: 'u2', name: 'Void Shield', price: 7000, icon: 'fa-shield-halved', type: 'item', desc: 'Wheel Protection' }
     ];
 
-    function updateUI() {
-        document.getElementById('stat-points').innerText = credits.toLocaleString();
-        document.getElementById('pet-icon').innerText = activePet.icon;
-        document.getElementById('pet-name').innerText = activePet.name;
+    function update() {
+        document.getElementById('count-pts').innerText = credits.toLocaleString();
+        document.getElementById('main-pet-icon').innerText = activePet.icon;
+        document.getElementById('main-pet-name').innerText = activePet.name;
         document.getElementById('hunger-bar').style.width = hunger + '%';
         
         localStorage.setItem('credits', credits);
-        localStorage.setItem('inv', JSON.stringify(inv));
+        localStorage.setItem('inventory', JSON.stringify(inventory));
         localStorage.setItem('activePet', JSON.stringify(activePet));
         localStorage.setItem('hunger', hunger);
         
-        renderShop();
-        renderGear();
+        renderLists();
     }
 
-    // --- SYSTEMS ---
-    function feedPet() {
-        if (credits >= 50 && hunger < 100) {
-            credits -= 50; hunger = Math.min(100, hunger + 20);
-            tg.HapticFeedback.notificationOccurred('success'); updateUI();
-        } else { tg.showAlert(hunger >= 100 ? "Pet is full!" : "Need 50 credits!"); }
-    }
-    setInterval(() => { if(hunger > 0) { hunger -= 1; updateUI(); } }, 60000);
-
-    function showTab(id, el) {
+    function tab(id, el) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
         document.getElementById('view-' + id).classList.add('active');
         el.classList.add('active');
     }
 
-    function buy(item) {
-        if (credits >= item.price) {
-            credits -= item.price; inv.push(item);
-            tg.HapticFeedback.notificationOccurred('success'); updateUI();
+    function giveFood() {
+        if (credits >= 50 && hunger < 100) {
+            credits -= 50; hunger = Math.min(100, hunger + 25);
+            tg.HapticFeedback.notificationOccurred('success'); update();
+        } else { tg.showAlert(hunger >= 100 ? "Pet is full!" : "Need 50 credits!"); }
+    }
+
+    setInterval(() => { if(hunger > 0) { hunger -= 1; update(); } }, 60000);
+
+    function buy(obj) {
+        if (credits >= obj.price) {
+            credits -= obj.price; inventory.push(obj);
+            tg.HapticFeedback.notificationOccurred('success'); update();
         } else { tg.showAlert("Need more credits!"); }
     }
 
     function equip(id) {
-        const pet = inv.find(i => i.id === id);
-        if (pet && pet.type === 'pet') { activePet = pet; tg.showPopup({message: `Equipped ${pet.name}`}); updateUI(); }
+        const p = inventory.find(i => i.id === id);
+        if (p && p.type === 'pet') { activePet = p; update(); tg.showPopup({message: `Equipped ${p.name}`}); }
     }
 
-    function redeem() {
-        const code = document.getElementById('voucher-in').value.toUpperCase();
-        if (code === "CYBER2026" && !localStorage.getItem('v_1')) {
-            credits += 2000; localStorage.setItem('v_1', 't');
-            tg.showPopup({message: "Redeemed 2,000 PTS!"}); updateUI();
-        } else { tg.showAlert("Invalid or used code."); }
+    function redeemCode() {
+        const val = document.getElementById('code-in').value.toUpperCase();
+        if (val === "CYBER2026" && !localStorage.getItem('v_used')) {
+            credits += 2500; localStorage.setItem('v_used', 'true');
+            tg.showPopup({message: "Success! +2,500 PTS"}); update();
+        } else { tg.showAlert("Code invalid or used."); }
     }
 
-    // --- GAMES ---
     function openGame(type) {
-        const area = document.getElementById('game-canvas-area');
-        document.getElementById('game-overlay').style.display = 'flex';
-        area.innerHTML = "";
+        const stage = document.getElementById('screen-content');
+        document.getElementById('game-screen').style.display = 'flex';
+        stage.innerHTML = "";
 
         if (type === 'wheel') {
-            area.innerHTML = `<div class="wheel-box"><div class="pointer"></div><canvas id="canvas-wheel" width="600" height="600"></canvas></div><button class="btn" style="width:200px; margin-top:20px;" onclick="spin()">SPIN (250 PTS)</button>`;
+            stage.innerHTML = `<div class="wheel-shell"><div class="wheel-arrow"></div><canvas id="wheel-canvas" width="600" height="600"></canvas></div><button class="btn" style="width:220px; margin-top:20px;" onclick="spin()">SPIN (250 PTS)</button>`;
             drawWheel();
         } else if (type === 'tap') {
-            area.innerHTML = `<div id="tap-node" style="width:160px; height:160px; border-radius:50%; border:4px solid var(--cyan); display:flex; align-items:center; justify-content:center; font-size:4rem; box-shadow:0 0 20px var(--cyan);"><i class="fa-solid fa-bolt"></i></div><h3 style="margin-top:20px;">MINING...</h3>`;
-            document.getElementById('tap-node').onclick = () => {
-                let m = inv.some(i => i.id === 'i1') ? 30 : 10;
-                credits += m; updateUI(); tg.HapticFeedback.impactOccurred('light');
+            stage.innerHTML = `<div id="node" style="width:180px; height:180px; border-radius:50%; border:5px solid var(--cyan); display:flex; align-items:center; justify-content:center; font-size:4rem; box-shadow:0 0 30px var(--cyan);"><i class="fa-solid fa-bolt"></i></div><h3 style="margin-top:25px;">MINING CORE</h3>`;
+            document.getElementById('node').onclick = () => {
+                let m = inventory.some(i => i.id === 'u1') ? 50 : 10;
+                credits += m; update(); tg.HapticFeedback.impactOccurred('medium');
             };
         } else if (type === 'plinko') {
-            area.innerHTML = `<canvas id="pCanvas" width="300" height="350"></canvas><button onclick="dropBall()" class="btn" style="width:180px; margin-top:15px;">DROP (50 PTS)</button>`;
-            initPlinko();
+            stage.innerHTML = `<h3>PLINKO SYSTEM</h3><p>Physics Engine Loading...</p><button class="btn" onclick="credits+=150;update();tg.showAlert('Beta: 150 PTS added');">DROP (BETA)</button>`;
         }
     }
 
-    // Wheel Engine
-    const SLOTS = ["100", "0", "VOUCHER", "0", "1000", "50", "ZERO", "200"];
+    const WHEEL_DATA = ["500", "0", "VOUCHER", "0", "2000", "100", "ZERO", "250"];
     function drawWheel() {
-        const ctx = document.getElementById('canvas-wheel').getContext('2d');
-        const colors = ["#a855f7", "#1e293b", "#fbbf24", "#1e293b", "#22d3ee", "#f472b6", "#1e293b", "#4ade80"];
+        const ctx = document.getElementById('wheel-canvas').getContext('2d');
+        const cols = ["#a855f7", "#1e293b", "#fbbf24", "#1e293b", "#22d3ee", "#f472b6", "#1e293b", "#4ade80"];
         for (let i = 0; i < 8; i++) {
             ctx.beginPath(); ctx.moveTo(300, 300); ctx.arc(300, 300, 300, i * Math.PI/4, (i+1) * Math.PI/4);
-            ctx.fillStyle = colors[i]; ctx.fill();
+            ctx.fillStyle = cols[i]; ctx.fill();
             ctx.save(); ctx.translate(300, 300); ctx.rotate(i * Math.PI/4 + Math.PI/8);
-            ctx.fillStyle = "white"; ctx.font = "bold 35px sans-serif"; ctx.fillText(SLOTS[i], 110, 10); ctx.restore();
+            ctx.fillStyle = "white"; ctx.font = "bold 40px sans-serif"; ctx.fillText(WHEEL_DATA[i], 120, 15); ctx.restore();
         }
     }
+
     function spin() {
         if (spinning || credits < 250) return;
-        credits -= 250; updateUI(); spinning = true;
+        credits -= 250; update(); spinning = true;
         const deg = 3600 + Math.floor(Math.random() * 360);
-        document.getElementById('canvas-wheel').style.transform = `rotate(${deg}deg)`;
+        document.getElementById('wheel-canvas').style.transform = `rotate(${deg}deg)`;
         setTimeout(() => {
             spinning = false;
-            const res = SLOTS[7 - Math.floor((deg % 360) / 45)];
-            if (res === "ZERO") { if(!inv.some(i => i.id === 'i2')) credits = Math.max(0, credits - 500); tg.showAlert("ZERO! Loss protected if Luck Matrix owned."); }
-            else if (res === "VOUCHER") { credits += 2000; tg.showAlert("Win! +2,000 PTS!"); }
+            const res = WHEEL_DATA[7 - Math.floor((deg % 360) / 45)];
+            if (res === "ZERO") { if(!inventory.some(i => i.id === 'u2')) credits = Math.max(0, credits - 1000); tg.showAlert("HIT ZERO! Protection shield saves you if owned."); }
+            else if (res === "VOUCHER") { credits += 5000; tg.showAlert("JACKPOT! +5,000 PTS"); }
             else { credits += parseInt(res); }
-            updateUI();
+            update();
         }, 4000);
     }
 
-    // Plinko Engine
-    let pCtx, balls = [], pins = [];
-    function initPlinko() {
-        const canvas = document.getElementById('pCanvas'); pCtx = canvas.getContext('2d');
-        plinkoActive = true; pins = [];
-        for (let r = 2; r < 9; r++) { for (let i = 0; i <= r; i++) pins.push({ x: 150 + (i - r/2) * 30, y: 40 + r * 35 }); }
-        renderPlinko();
-    }
-    function dropBall() {
-        if (credits < 50) return; credits -= 50; updateUI();
-        balls.push({ x: 150 + (Math.random()-0.5)*10, y: 10, vx: 0, vy: 2 });
-    }
-    function renderPlinko() {
-        if (!plinkoActive) return;
-        pCtx.fillStyle = "#020617"; pCtx.fillRect(0,0,300,350);
-        pCtx.fillStyle = "#444"; pins.forEach(p => { pCtx.beginPath(); pCtx.arc(p.x, p.y, 2, 0, 7); pCtx.fill(); });
-        pCtx.fillStyle = "#a855f7";
-        balls.forEach((b, i) => {
-            b.vy += 0.2; b.x += b.vx; b.y += b.vy;
-            pins.forEach(p => { if (Math.hypot(b.x - p.x, b.y - p.y) < 8) { b.vy *= -0.5; b.vx = (b.x - p.x) * 0.6; } });
-            pCtx.beginPath(); pCtx.arc(b.x, b.y, 5, 0, 7); pCtx.fill();
-            if (b.y > 350) { balls.splice(i, 1); credits += 150; updateUI(); }
-        });
-        requestAnimationFrame(renderPlinko);
-    }
-
-    // Shop Renders
-    function renderShop() {
-        document.getElementById('store-pets').innerHTML = PETS_DATA.map(p => {
-            const owned = inv.some(i => i.id === p.id);
+    function renderLists() {
+        document.getElementById('pet-grid').innerHTML = PETS.map(p => {
+            const has = inventory.some(i => i.id === p.id);
             return `<div class="tile" style="flex-direction:column; text-align:center;">
-                <div style="font-size:2rem;">${p.icon}</div>
-                <div style="font-size:0.7rem; font-weight:bold;">${p.name}</div>
-                <button class="btn ${owned?'owned':''}" onclick="${owned?'':`buy(${JSON.stringify(p)})`}" style="font-size:0.6rem;">${owned?'OWNED':p.price}</button>
+                <div style="font-size:2.5rem;">${p.icon}</div>
+                <div style="font-size:0.8rem; font-weight:bold;">${p.name}</div>
+                <button class="btn ${has?'owned':''}" onclick="${has?'':`buy(${JSON.stringify(p)})`}" style="padding:6px; font-size:0.7rem;">${has?'OWNED':p.price}</button>
             </div>`;
         }).join('');
-        document.getElementById('store-items').innerHTML = ITEMS_DATA.map(i => {
-            const owned = inv.some(inv => inv.id === i.id);
+
+        document.getElementById('item-grid').innerHTML = ITEMS.map(i => {
+            const has = inventory.some(item => item.id === i.id);
             return `<div class="tile" style="flex-direction:column; text-align:center;">
-                <i class="fa-solid ${i.icon}" style="color:var(--cyan)"></i>
+                <i class="fa-solid ${i.icon}" style="color:var(--cyan); font-size:1.5rem;"></i>
                 <div style="font-size:0.7rem; font-weight:bold;">${i.name}</div>
-                <button class="btn ${owned?'owned':''}" onclick="${owned?'':`buy(${JSON.stringify(i)})`}" style="font-size:0.6rem;">${owned?'ACTIVE':i.price}</button>
+                <button class="btn ${has?'owned':''}" onclick="${has?'':`buy(${JSON.stringify(i)})`}" style="padding:6px; font-size:0.7rem;">${has?'ACTIVE':i.price}</button>
             </div>`;
         }).join('');
-    }
 
-    function renderGear() {
-        document.getElementById('gear-container').innerHTML = inv.map(item => `
-            <div class="tile" style="flex-direction:column; text-align:center; border-color:var(--pink)">
-                <div style="font-size:1.5rem;">${item.icon.startsWith('fa') ? `<i class="fa-solid ${item.icon}"></i>` : item.icon}</div>
-                <div style="font-size:0.6rem;">${item.name}</div>
-                ${item.type === 'pet' ? `<button class="btn" style="font-size:0.6rem; padding:4px;" onclick="equip('${item.id}')">EQUIP</button>` : ''}
+        document.getElementById('gear-grid').innerHTML = inventory.map(item => `
+            <div class="tile" style="flex-direction:column; text-align:center; border-color:var(--pink);">
+                <div style="font-size:2rem;">${item.icon.startsWith('fa') ? `<i class="fa-solid ${item.icon}"></i>` : item.icon}</div>
+                <div style="font-size:0.7rem; font-weight:bold;">${item.name}</div>
+                ${item.type === 'pet' ? `<button class="btn" style="padding:5px; font-size:0.6rem;" onclick="equip('${item.id}')">EQUIP</button>` : ''}
             </div>
         `).join('');
     }
 
-    function closeGame() { document.getElementById('game-overlay').style.display = 'none'; plinkoActive = false; }
-    
-    updateUI();
+    function exitGame() { document.getElementById('game-screen').style.display = 'none'; update(); }
+
     tg.expand();
-    document.getElementById('user-tag').innerText = `@${tg.initDataUnsafe.user?.username || 'GUEST'}`;
+    document.getElementById('display-user').innerText = `@${tg.initDataUnsafe.user?.username || 'GUEST'}`;
+    update();
 </script>
 </body>
 </html>
