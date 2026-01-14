@@ -174,12 +174,28 @@
     tg.expand();
     tg.ready();
 
-    let totalPoints = parseInt(localStorage.getItem('totalPoints')) || 1000;
+    // Load points (Default 0 now because Welcome Bonus adds the starting amount)
+    let totalPoints = parseInt(localStorage.getItem('totalPoints')) || 0;
     let lastClaim = parseInt(localStorage.getItem('lastClaim')) || 0;
     let plinkoActive = false;
 
     // Initialization
     document.getElementById('username').innerText = `@${tg.initDataUnsafe.user?.username || 'PLAYER_01'}`;
+    
+    // WELCOME BONUS LOGIC
+    if (!localStorage.getItem('welcomeClaimed')) {
+        totalPoints = 5000; // Give 5,000 Credits
+        localStorage.setItem('welcomeClaimed', 'true');
+        localStorage.setItem('totalPoints', totalPoints);
+        
+        tg.showPopup({
+            title: "🎁 WELCOME BONUS",
+            message: "You received 5,000 Cyber Credits for joining the Arcade!",
+            buttons: [{type: 'ok'}]
+        });
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
     updatePointsDisplay();
     updateLeaderboard();
     setInterval(updateDailyTimer, 60000);
