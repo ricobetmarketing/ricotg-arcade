@@ -169,7 +169,8 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
     tg.ready();
-
+// Replace the URL below with your actual Cloudflare Worker URL from the dashboard
+const API_URL = "https://ricotg-arcade.pages.dev/";
     let totalPoints = parseInt(localStorage.getItem('totalPoints')) || 1000;
     let lastClaim = parseInt(localStorage.getItem('lastClaim')) || 0;
     let plinkoActive = false;
