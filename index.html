@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Telegram Arcade - Cyberpunk</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #020617;
+            --card-bg: rgba(30, 41, 59, 0.6);
+            --cyan-neon: #22d3ee;
+            --purple-neon: #a855f7;
+            --green-neon: #4ade80;
+            --text-main: #f8fafc;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.15) 0%, transparent 50%);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Scanline Effect */
+        body::before {
+            content: " ";
+            position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: rgba(34, 211, 238, 0.1);
+            z-index: 1000;
+            pointer-events: none;
+            animation: scan 8s linear infinite;
+        }
+        @keyframes scan { from { top: 0; } to { top: 100%; } }
+
+        header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .user-profile { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
+
+        .points-panel { text-align: center; padding: 10px 0 20px; }
+        .points-label { text-transform: uppercase; letter-spacing: 2px; font-size: 0.7rem; color: var(--cyan-neon); }
+        .points-value { font-size: 3.5rem; font-weight: 900; text-shadow: 0 0 20px rgba(34, 211, 238, 0.4); margin: 5px 0; }
+
+        .game-grid { display: grid; grid-template-columns: 1fr; gap: 15px; padding: 20px; overflow-y: auto; flex-grow: 1; }
+        .game-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s;
+        }
+        .game-card:hover { border-color: var(--cyan-neon); background: rgba(34, 211, 238, 0.05); }
+
+        .game-icon { width: 60px; height: 60px; border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; border: 1px solid; }
+        .tap-icon { color: var(--cyan-neon); box-shadow: 0 0 10px var(--cyan-neon); }
+        .plinko-icon { color: var(--purple-neon); box-shadow: 0 0 10px var(--purple-neon); }
+        .pet-icon { color: var(--green-neon); box-shadow: 0 0 10px var(--green-neon); }
+
+        .game-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark); z-index: 100; display: none; flex-direction: column;
+        }
+        .back-btn { padding: 20px; font-size: 1.5rem; color: var(--cyan-neon); }
+
+        canvas { background: #000; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        
+        .stat-bar { width: 200px; height: 10px; background: #333; border-radius: 5px; overflow: hidden; margin-top: 5px; }
+        .stat-fill { height: 100%; background: var(--green-neon); transition: width 0.3s; }
+        
+        .bottom-nav {
+            background: rgba(15, 23, 42, 0.95);
+            display: flex; justify-content: space-around;
+            padding: 15px 0 30px; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .nav-item { color: #64748b; font-size: 0.7rem; text-decoration: none; text-align: center; }
+        .nav-item.active { color: var(--cyan-neon); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="user-profile">
+            <i class="fa-solid fa-circle-user"></i>
+            <span id="username">WELCOME, PLAYER</span>
+        </div>
+        <i class="fa-solid fa-bolt" style="color:var(--cyan-neon)"></i>
+    </header>
+
+    <div class="points-panel">
+        <div class="points-label">Global Credits</div>
+        <div class="points-value" id="main-points">0</div>
+    </div>
+
+    <div class="game-grid" id="home-page">
+        <div class="game-card" onclick="openGame('tap')">
+            <div class="game-icon tap-icon"><i class="fa-solid fa-hand-pointer"></i></div>
+            <div class="game-info">
+                <h3>CYBER CLICKER</h3>
+                <p>FAST TAPS = FAST CREDITS</p>
+            </div>
+        </div>
+
+        <div class="game-card" onclick="openGame('plinko')">
+            <div class="game-icon plinko-icon"><i class="fa-solid fa-tower-broadcast"></i></div>
+            <div class="game-info">
+                <h3>PLINKO DROPS</h3>
+                <p>PHYSICS-BASED LUCK GAME</p>
+            </div>
+        </div>
+
+        <div class="game-card" onclick="openGame('pet')">
+            <div class="game-icon pet-icon"><i class="fa-solid fa-microchip"></i></div>
+            <div class="game-info">
+                <h3>NEURAL PET</h3>
+                <p>NURTURE YOUR BOT FOR PASSIVE INCOME</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-overlay" id="game-overlay">
+        <div class="back-btn" onclick="closeGame()"><i class="fa-solid fa-xmark"></i> EXIT SYSTEM</div>
+        <div id="game-content" style="flex-grow:1; display:flex; flex-direction:column; align-items:center; padding: 20px;"></div>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="#" class="nav-item active"><i class="fa-solid fa-house"></i><br>HOME</a>
+        <a href="#" onclick="tg.showPopup({message:'Leaderboard Syncing...'})" class="nav-item"><i class="fa-solid fa-trophy"></i><br>RANK</a>
+        <a href="#" onclick="tg.openLink('https://yourwebsite.com')" class="nav-item"><i class="fa-solid fa-globe"></i><br>WEB</a>
+    </nav>
+
+<script>
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+    
+    let totalPoints = parseInt(localStorage.getItem('totalPoints')) || 1000;
+    let petHunger = 100;
+    
+    document.getElementById('username').innerText = `@${tg.initDataUnsafe.user?.username || 'GUEST_OPERATOR'}`;
+    updatePointsDisplay();
+
+    function updatePointsDisplay() {
+        document.getElementById('main-points').innerText = totalPoints;
+        localStorage.setItem('totalPoints', totalPoints);
+    }
+
+    function openGame(type) {
+        const overlay = document.getElementById('game-overlay');
+        const content = document.getElementById('game-content');
+        overlay.style.display = 'flex';
+        content.innerHTML = ""; 
+
+        if (type === 'tap') {
+            content.innerHTML = `
+                <div id="tap-circle" style="width:220px; height:220px; background:radial-gradient(circle, var(--cyan-neon), transparent); border-radius:50%; display:flex; align-items:center; justify-content:center; border:4px solid var(--cyan-neon); box-shadow: 0 0 30px var(--cyan-neon); cursor:pointer;">
+                    <i class="fa-solid fa-fingerprint" style="font-size:5rem;"></i>
+                </div>
+                <h2 style="color:var(--cyan-neon); margin-top:30px;">OVERLOAD THE CORE</h2>
+                <p>TAP REPEATEDLY FOR CREDITS</p>
+            `;
+            document.getElementById('tap-circle').onmousedown = () => {
+                totalPoints += 5;
+                updatePointsDisplay();
+                tg.HapticFeedback.impactOccurred('medium');
+                document.getElementById('tap-circle').style.transform = "scale(0.95)";
+                setTimeout(() => document.getElementById('tap-circle').style.transform = "scale(1)", 50);
+            };
+        } 
+        
+        else if (type === 'plinko') {
+            content.innerHTML = `
+                <canvas id="plinkoCanvas" width="320" height="400"></canvas>
+                <button onclick="dropBall()" style="margin-top:20px; padding:15px 40px; background:var(--purple-neon); color:white; border:none; border-radius:10px; font-weight:bold;">DROP BALL (COST: 50)</button>
+            `;
+            initPlinko();
+        }
+
+        else if (type === 'pet') {
+            content.innerHTML = `
+                <i class="fa-solid fa-robot" style="font-size:8rem; color:var(--green-neon); text-shadow:0 0 20px var(--green-neon);"></i>
+                <h2 style="margin-top:20px;">NEURAL UNIT #01</h2>
+                <div class="stat-bar"><div id="hunger-fill" class="stat-fill" style="width:${petHunger}%"></div></div>
+                <p>Core Energy: <span id="hunger-val">${petHunger}</span>%</p>
+                <button onclick="feedPet()" style="margin-top:10px; padding:12px 30px; background:var(--green-neon); color:black; border:none; border-radius:8px; font-weight:bold;">RECHARGE UNIT</button>
+            `;
+        }
+    }
+
+    // --- PLINKO LOGIC ---
+    let plinkoCanvas, pCtx, balls = [];
+    const pins = [];
+    function initPlinko() {
+        plinkoCanvas = document.getElementById('plinkoCanvas');
+        pCtx = plinkoCanvas.getContext('2d');
+        pins.length = 0;
+        for (let r = 2; r < 9; r++) {
+            for (let i = 0; i <= r; i++) {
+                pins.push({ x: 160 + (i - r/2) * 35, y: 50 + r * 40 });
+            }
+        }
+        requestAnimationFrame(updatePlinko);
+    }
+
+    function dropBall() {
+        if (totalPoints < 50) return tg.showAlert("Insufficient Credits!");
+        totalPoints -= 50; updatePointsDisplay();
+        balls.push({ x: 160 + (Math.random()-0.5)*10, y: 20, vx: 0, vy: 2 });
+    }
+
+    function updatePlinko() {
+        if (!pCtx) return;
+        pCtx.fillStyle = "#000"; pCtx.fillRect(0,0,320,400);
+        pCtx.fillStyle = "#444";
+        pins.forEach(p => { pCtx.beginPath(); pCtx.arc(p.x, p.y, 3, 0, Math.PI*2); pCtx.fill(); });
+        
+        pCtx.fillStyle = var(--purple-neon);
+        balls.forEach((b, idx) => {
+            b.vy += 0.2; b.x += b.vx; b.y += b.vy;
+            pins.forEach(p => {
+                let d = Math.hypot(b.x - p.x, b.y - p.y);
+                if (d < 10) { 
+                    b.vy *= -0.5; b.vx = (b.x - p.x) * 0.5; 
+                    tg.HapticFeedback.impactOccurred('light');
+                }
+            });
+            pCtx.beginPath(); pCtx.arc(b.x, b.y, 6, 0, Math.PI*2); pCtx.fill();
+            if (b.y > 400) { 
+                balls.splice(idx, 1); 
+                let win = Math.floor(Math.random() * 200);
+                totalPoints += win; updatePointsDisplay();
+                tg.showPopup({message: `WIN: +${win} CREDITS!`});
+            }
+        });
+        requestAnimationFrame(updatePlinko);
+    }
+
+    // --- PET LOGIC ---
+    function feedPet() {
+        petHunger = Math.min(100, petHunger + 20);
+        document.getElementById('hunger-fill').style.width = petHunger + '%';
+        document.getElementById('hunger-val').innerText = petHunger;
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+
+    function closeGame() {
+        document.getElementById('game-overlay').style.display = 'none';
+        pCtx = null; // Stop Plinko loop
+    }
+</script>
+</body>
+</html>
