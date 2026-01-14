@@ -87,11 +87,11 @@
             padding: 10px 0 25px; border-top: 1px solid rgba(255,255,255,0.1);
             z-index: 50;
         }
-        .nav-item { color: #64748b; font-size: 0.65rem; text-decoration: none; text-align: center; background: none; border: none; flex: 1; }
+        .nav-item { color: #64748b; font-size: 0.65rem; text-decoration: none; text-align: center; background: none; border: none; flex: 1; cursor: pointer; }
         .nav-item.active { color: var(--cyan-neon); }
         .nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
 
-        .leaderboard-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .leaderboard-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
@@ -150,7 +150,8 @@
     <div id="section-rank" class="view-section">
         <h3 style="text-align: center; color: var(--cyan-neon);"><i class="fa-solid fa-trophy"></i> TOP OPERATORS</h3>
         <div id="leaderboard-list">
-            </div>
+            <div style="text-align:center; padding:20px; opacity:0.5;">Loading Global Data...</div>
+        </div>
     </div>
 
     <div class="game-overlay" id="game-overlay">
@@ -167,10 +168,12 @@
 
 <script>
     const tg = window.Telegram.WebApp;
+    // --- REPLACE THIS WITH YOUR WORKER URL ---
+    const API_URL = "https://ricotg-arcade.pages.dev/"; 
+    
     tg.expand();
     tg.ready();
-// Replace the URL below with your actual Cloudflare Worker URL from the dashboard
-const API_URL = "https://ricotg-arcade.pages.dev/";
+
     let totalPoints = parseInt(localStorage.getItem('totalPoints')) || 1000;
     let lastClaim = parseInt(localStorage.getItem('lastClaim')) || 0;
     let plinkoActive = false;
@@ -182,9 +185,37 @@ const API_URL = "https://ricotg-arcade.pages.dev/";
     setInterval(updateDailyTimer, 60000);
     updateDailyTimer();
 
-    function updatePointsDisplay() {
+    // Core Logic
+    async function updatePointsDisplay() {
         document.getElementById('main-points').innerText = totalPoints.toLocaleString();
         localStorage.setItem('totalPoints', totalPoints);
+        
+        // Sync to Cloudflare
+        const username = tg.initDataUnsafe.user?.username || "Anonymous";
+        try {
+            await fetch(`${API_URL}/save`, {
+                method: "POST",
+                body: JSON.stringify({ username, points: totalPoints }),
+                headers: { "Content-Type": "application/json" }
+            });
+        } catch (e) { console.warn("Score sync delayed..."); }
+    }
+
+    async function updateLeaderboard() {
+        const list = document.getElementById('leaderboard-list');
+        try {
+            const response = await fetch(`${API_URL}/list`);
+            const topPlayers = await response.json();
+            
+            list.innerHTML = topPlayers.map((u, i) => `
+                <div class="leaderboard-item">
+                    <span>#${i+1} @${u.username}</span>
+                    <span style="color:var(--cyan-neon)">${u.points.toLocaleString()}</span>
+                </div>
+            `).join('');
+        } catch (e) {
+            list.innerHTML = "<div style='text-align:center; padding:20px;'>Database Offline</div>";
+        }
     }
 
     function showSection(id, btn) {
@@ -192,11 +223,12 @@ const API_URL = "https://ricotg-arcade.pages.dev/";
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById('section-' + id).classList.add('active');
         btn.classList.add('active');
+        if(id === 'rank') updateLeaderboard();
         tg.HapticFeedback.impactOccurred('light');
     }
 
     function shareScore() {
-        const text = `🎮 Play Cyber Arcade with me! I have ${totalPoints} credits. Join now!`;
+        const text = `🎮 Join my Cyber Arcade! I have ${totalPoints} credits. Can you beat me?`;
         tg.switchInlineQuery(text);
     }
 
@@ -214,8 +246,7 @@ const API_URL = "https://ricotg-arcade.pages.dev/";
         } else {
             btn.disabled = true;
             btn.innerText = "WAIT";
-            const remaining = 86400000 - diff;
-            const hrs = Math.floor(remaining / 3600000);
+            const hrs = Math.floor((86400000 - diff) / 3600000);
             timerText.innerText = `Next claim in ${hrs}h`;
         }
     }
@@ -236,22 +267,8 @@ const API_URL = "https://ricotg-arcade.pages.dev/";
             updatePointsDisplay();
             btn.innerText = "DONE";
             btn.disabled = true;
-            tg.showPopup({ message: `Reward of ${reward} credits claimed!` });
-        }, 3000);
-    }
-
-    function updateLeaderboard() {
-        const list = document.getElementById('leaderboard-list');
-        const fakePlayers = [
-            { n: "CyberMax", p: 150000 }, { n: "Neo_TG", p: 82000 }, { n: "GhostNode", p: 45000 }, { n: "Operator", p: totalPoints }
-        ].sort((a,b) => b.p - a.p);
-        
-        list.innerHTML = fakePlayers.map((u, i) => `
-            <div class="leaderboard-item">
-                <span>#${i+1} ${u.n}</span>
-                <span style="color:var(--cyan-neon)">${u.p.toLocaleString()}</span>
-            </div>
-        `).join('');
+            tg.showPopup({ message: `Task reward of ${reward} claimed!` });
+        }, 5000);
     }
 
     // --- GAME ENGINE ---
@@ -274,7 +291,7 @@ const API_URL = "https://ricotg-arcade.pages.dev/";
                 e.preventDefault();
                 totalPoints += 2; updatePointsDisplay();
                 tg.HapticFeedback.impactOccurred('light');
-                circle.style.transform = "scale(0.9)";
+                circle.style.transform = "scale(0.95)";
                 setTimeout(() => circle.style.transform = "scale(1)", 50);
             };
             circle.addEventListener('touchstart', handler);
@@ -285,11 +302,10 @@ const API_URL = "https://ricotg-arcade.pages.dev/";
         } else if (type === 'pet') {
             content.innerHTML = `<i class="fa-solid fa-robot" style="font-size:6rem; color:var(--green-neon);"></i>
             <h3>NEURAL BOT</h3><p>Battery: 100%</p>
-            <button class="btn-claim" onclick="tg.showPopup({message:'Battery is full!'})">RECHARGE</button>`;
+            <button class="btn-claim" onclick="tg.showPopup({message:'Battery is currently full!'})">RECHARGE</button>`;
         }
     }
 
-    // Simplified Plinko physics
     let pCtx, balls = [], pins = [];
     function initPlinko() {
         const canvas = document.getElementById('pCanvas');
@@ -321,7 +337,11 @@ const API_URL = "https://ricotg-arcade.pages.dev/";
                 if (d < 8) { b.vy *= -0.4; b.vx = (b.x - p.x) * 0.5; tg.HapticFeedback.impactOccurred('light'); }
             });
             pCtx.beginPath(); pCtx.arc(b.x, b.y, 5, 0, Math.PI*2); pCtx.fill();
-            if (b.y > 350) { balls.splice(idx,1); totalPoints += 100; updatePointsDisplay(); }
+            if (b.y > 350) { 
+                balls.splice(idx,1); 
+                let win = [0, 50, 100, 500, 20][Math.floor(Math.random()*5)];
+                totalPoints += win; updatePointsDisplay();
+            }
         });
         requestAnimationFrame(updatePlinko);
     }
