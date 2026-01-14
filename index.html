@@ -3,266 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cyber Arcade: Ultimate Edition</title>
+    <title>Cyber Arcade Master</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --bg-dark: #020617;
-            --card-bg: rgba(30, 41, 59, 0.6);
-            --cyan-neon: #22d3ee;
-            --purple-neon: #a855f7;
-            --green-neon: #4ade80;
-            --gold: #fbbf24;
-            --pink-neon: #f472b6;
-            --text-main: #f8fafc;
+            --bg: #020617; --card: rgba(30, 41, 59, 0.7);
+            --cyan: #22d3ee; --purple: #a855f7; --green: #4ade80;
+            --gold: #fbbf24; --pink: #f472b6; --text: #f8fafc;
         }
 
         body {
-            margin: 0; padding: 0;
-            background-color: var(--bg-dark);
-            background-image: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.15) 0%, transparent 50%);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+            margin: 0; padding: 0; background: var(--bg); color: var(--text);
+            font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden;
+            background-image: radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
         }
 
-        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(34, 211, 238, 0.2); }
-        .points-panel { text-align: center; padding: 10px 0; background: rgba(0,0,0,0.2); }
-        .points-label { text-transform: uppercase; letter-spacing: 2px; font-size: 0.65rem; color: var(--cyan-neon); }
-        .points-value { font-size: 2.8rem; font-weight: 900; text-shadow: 0 0 15px rgba(34, 211, 238, 0.4); margin: 0; }
+        header { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .balance-panel { text-align: center; padding: 15px 0; background: rgba(0,0,0,0.2); }
+        .points-display { font-size: 2.8rem; font-weight: 900; text-shadow: 0 0 15px var(--cyan); margin: 0; }
 
-        .view-section { display: none; flex-direction: column; gap: 15px; padding: 15px; overflow-y: auto; flex-grow: 1; padding-bottom: 110px; }
-        .view-section.active { display: flex; }
+        .view { display: none; flex-direction: column; gap: 12px; padding: 15px; overflow-y: auto; height: calc(100vh - 240px); padding-bottom: 100px; }
+        .view.active { display: flex; }
 
-        /* UI Components */
-        .card { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 15px; transition: 0.2s; }
-        .game-card { display: flex; align-items: center; gap: 15px; cursor: pointer; }
-        .game-card:active { transform: scale(0.97); }
-        .game-icon { width: 45px; height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 1px solid; }
+        /* General Tiles */
+        .tile { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; }
+        .tile:active { transform: scale(0.98); }
+        .tile-icon { width: 45px; height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 1px solid; }
 
-        /* Store/Inventory Grid */
-        .item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .item-card { text-align: center; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(168, 85, 247, 0.2); }
+        /* Pet HUD */
+        .pet-hud { background: rgba(255,255,255,0.03); border-radius: 20px; padding: 15px; text-align: center; border: 1px dashed rgba(34, 211, 238, 0.3); }
+        .pet-emoji { font-size: 4rem; margin-bottom: 5px; filter: drop-shadow(0 0 10px var(--cyan)); }
+        .bar-container { width: 100%; height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+        .bar-fill { height: 100%; background: var(--green); transition: 0.4s; }
 
-        /* Wheel */
-        .wheel-container { position: relative; width: 260px; height: 260px; margin: 10px auto; }
-        #wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid #334155; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); }
-        .pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid var(--gold); z-index: 10; }
+        /* Common Buttons */
+        .btn { background: var(--purple); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; }
+        .btn.owned { background: #334155; color: #94a3b8; }
+        .btn-feed { background: var(--green); width: auto; padding: 6px 15px; font-size: 0.7rem; }
 
-        /* Inputs & Buttons */
-        input { background: rgba(255,255,255,0.05); border: 1px solid var(--purple-neon); color: white; padding: 10px; border-radius: 8px; width: calc(100% - 22px); margin-bottom: 10px; }
-        .btn-main { background: var(--purple-neon); color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; }
-        .btn-main.owned { background: #334155; color: #94a3b8; }
+        /* Game Overlays */
+        #game-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; display: none; flex-direction: column; }
+        .wheel-box { position: relative; width: 280px; height: 280px; margin: 10px auto; }
+        #canvas-wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--gold); transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); }
+        .pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid var(--gold); z-index: 10; }
 
-        /* Navigation */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(15, 23, 42, 0.98); display: flex; justify-content: space-around; padding: 10px 0 25px; border-top: 1px solid rgba(255,255,255,0.1); z-index: 100; }
-        .nav-item { color: #64748b; font-size: 0.6rem; text-align: center; background: none; border: none; flex: 1; }
-        .nav-item.active { color: var(--cyan-neon); }
-        .nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
+        /* Navbar */
+        .navbar { position: fixed; bottom: 0; width: 100%; display: flex; background: #0f172a; padding: 10px 0 30px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .nav-item { flex: 1; text-align: center; color: #64748b; background: none; border: none; font-size: 0.6rem; }
+        .nav-item.active { color: var(--cyan); }
+        .nav-item i { font-size: 1.3rem; display: block; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
     <header>
-        <div id="username">@USER</div>
-        <div style="color: var(--green-neon); font-size: 0.7rem;">SYSTEM_ACTIVE</div>
+        <div id="user-tag">@PLAYER</div>
+        <div style="color:var(--green); font-size:0.7rem;"><i class="fa-solid fa-signal"></i> LIVE</div>
     </header>
 
-    <div class="points-panel">
-        <div class="points-label">Total Credits</div>
-        <div class="points-value" id="main-points">0</div>
+    <div class="balance-panel">
+        <div style="font-size:0.6rem; color:var(--cyan); letter-spacing:2px;">CREDITS</div>
+        <div class="points-display" id="stat-points">0</div>
     </div>
 
-    <div id="section-home" class="view-section active">
-        <div class="card game-card" onclick="openGame('wheel')">
-            <div class="game-icon" style="color:var(--gold); border-color:var(--gold);"><i class="fa-solid fa-dharmachakra"></i></div>
-            <div><h4 style="margin:0;">LUCKY WHEEL</h4><p style="margin:0; font-size:0.7rem; opacity:0.6;">Cost: 200 PTS to spin</p></div>
+    <div id="view-hub" class="view active">
+        <div class="pet-hud">
+            <div id="pet-icon" class="pet-emoji">🤖</div>
+            <h4 id="pet-name" style="margin:0;">Arcade Bot</h4>
+            <div class="bar-container"><div id="hunger-bar" class="bar-fill"></div></div>
+            <button class="btn btn-feed" onclick="feedPet()">FEED (50 PTS)</button>
         </div>
-        <div class="card game-card" onclick="openGame('tap')">
-            <div class="game-icon" style="color:var(--cyan-neon); border-color:var(--cyan-neon);"><i class="fa-solid fa-fingerprint"></i></div>
-            <div><h4 style="margin:0;">CORE CLICKER</h4><p style="margin:0; font-size:0.7rem; opacity:0.6;">Manual mining system</p></div>
+
+        <div class="tile" onclick="openGame('wheel')">
+            <div class="tile-icon" style="color:var(--gold); border-color:var(--gold);"><i class="fa-solid fa-dharmachakra"></i></div>
+            <div><h4 style="margin:0;">LUCKY WHEEL</h4><p style="margin:0; font-size:0.6rem; opacity:0.6;">Cost: 250 PTS</p></div>
         </div>
-        <div class="card game-card" onclick="openGame('plinko')">
-            <div class="game-icon" style="color:var(--purple-neon); border-color:var(--purple-neon);"><i class="fa-solid fa-braille"></i></div>
-            <div><h4 style="margin:0;">PLINKO DROPS</h4><p style="margin:0; font-size:0.7rem; opacity:0.6;">Physics luck engine</p></div>
+        <div class="tile" onclick="openGame('tap')">
+            <div class="tile-icon" style="color:var(--cyan); border-color:var(--cyan);"><i class="fa-solid fa-hand-pointer"></i></div>
+            <div><h4 style="margin:0;">CORE CLICKER</h4><p style="margin:0; font-size:0.6rem; opacity:0.6;">Manual mining</p></div>
         </div>
-        <div class="card game-card" onclick="openGame('pet')">
-            <div class="game-icon" style="color:var(--green-neon); border-color:var(--green-neon);"><i class="fa-solid fa-robot"></i></div>
-            <div><h4 style="margin:0;">NEURAL BOT</h4><p style="margin:0; font-size:0.7rem; opacity:0.6;">Maintenance mode</p></div>
+        <div class="tile" onclick="openGame('plinko')">
+            <div class="tile-icon" style="color:var(--purple); border-color:var(--purple);"><i class="fa-solid fa-braille"></i></div>
+            <div><h4 style="margin:0;">PLINKO DROPS</h4><p style="margin:0; font-size:0.6rem; opacity:0.6;">Physics game</p></div>
         </div>
     </div>
 
-    <div id="section-store" class="view-section">
-        <h3 style="color:var(--purple-neon); font-size:1rem; margin:0;">NEON EXCHANGE</h3>
-        <div class="item-grid" id="store-container"></div>
+    <div id="view-store" class="view">
+        <h3 style="color:var(--purple); margin:0;">PET EXCHANGE</h3>
+        <div id="store-pets" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
+        
+        <h3 style="color:var(--cyan); margin:15px 0 5px 0;">UPGRADES</h3>
+        <div id="store-items" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
     </div>
 
-    <div id="section-earn" class="view-section">
-        <div class="card">
+    <div id="view-earn" class="view">
+        <div class="tile" style="flex-direction:column; align-items:flex-start;">
             <h4 style="margin:0 0 10px 0;">REDEEM VOUCHER</h4>
-            <input type="text" id="voucher-input" placeholder="Enter Code...">
-            <button class="btn-main" onclick="redeemVoucher()">ACTIVATE</button>
-        </div>
-        <div class="card" onclick="tg.openLink('https://t.me/yourchannel')" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Join Official Channel</span>
-            <span style="color:var(--green-neon);">+1,000 PTS</span>
+            <input type="text" id="voucher-in" placeholder="Code..." style="width:90%; padding:10px; background:rgba(0,0,0,0.3); border:1px solid var(--purple); color:white; border-radius:8px; margin-bottom:10px;">
+            <button class="btn" onclick="redeem()">ACTIVATE</button>
         </div>
     </div>
 
-    <div id="section-inventory" class="view-section">
-        <h3 style="color:var(--pink-neon); font-size:1rem; margin:0;">MY INVENTORY</h3>
-        <div class="item-grid" id="inventory-container"></div>
-        <div id="empty-inv" style="text-align:center; padding:40px; opacity:0.4;">Inventory is empty</div>
+    <div id="view-gear" class="view">
+        <h3 style="color:var(--pink); margin:0;">MY INVENTORY</h3>
+        <div id="gear-container" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"></div>
     </div>
 
-    <div id="game-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-dark); display:none; flex-direction:column; z-index:200;">
-        <div style="padding: 20px;" onclick="closeGame()"><i class="fa-solid fa-chevron-left"></i> HUB</div>
-        <div id="game-content" style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;"></div>
+    <div id="game-overlay">
+        <div style="padding:20px; font-weight:bold;" onclick="closeGame()"><i class="fa-solid fa-chevron-left"></i> HUB</div>
+        <div id="game-canvas-area" style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;"></div>
     </div>
 
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="showSection('home', this)"><i class="fa-solid fa-gamepad"></i><br>PLAY</button>
-        <button class="nav-item" onclick="showSection('store', this)"><i class="fa-solid fa-shop"></i><br>SHOP</button>
-        <button class="nav-item" onclick="showSection('earn', this)"><i class="fa-solid fa-gift"></i><br>EARN</button>
-        <button class="nav-item" onclick="showSection('inventory', this)"><i class="fa-solid fa-box"></i><br>ITEMS</button>
+    <nav class="navbar">
+        <button class="nav-item active" onclick="showTab('hub', this)"><i class="fa-solid fa-house"></i>HUB</button>
+        <button class="nav-item" onclick="showTab('store', this)"><i class="fa-solid fa-shop"></i>SHOP</button>
+        <button class="nav-item" onclick="showTab('earn', this)"><i class="fa-solid fa-gift"></i>EARN</button>
+        <button class="nav-item" onclick="showTab('gear', this)"><i class="fa-solid fa-box"></i>GEAR</button>
     </nav>
 
 <script>
     const tg = window.Telegram.WebApp;
-    const API_URL = "https://your-worker.workers.dev"; // Set your URL
-
-    let totalPoints = parseInt(localStorage.getItem('totalPoints')) || 0;
-    let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
-    let isSpinning = false;
+    let credits = parseInt(localStorage.getItem('credits')) || 5000;
+    let inv = JSON.parse(localStorage.getItem('inv')) || [{id:'p1', name:'Bot', icon:'🤖', type:'pet'}];
+    let activePet = JSON.parse(localStorage.getItem('activePet')) || inv[0];
+    let hunger = parseInt(localStorage.getItem('hunger')) || 100;
+    let spinning = false;
     let plinkoActive = false;
 
-    const storeItems = [
-        { id: 1, name: "Gold Chip", price: 10000, icon: "fa-microchip", color: "#fbbf24", desc: "x5 Click Power" },
-        { id: 2, name: "Neon Shield", price: 5000, icon: "fa-shield-heart", color: "#a855f7", desc: "Luck Protection" },
-        { id: 3, name: "Admin Key", price: 50000, icon: "fa-key", color: "#22d3ee", desc: "Access Secrets" }
+    const PETS_DATA = [
+        { id: 'p2', name: 'Cyber Cat', price: 5000, icon: '🐱', type: 'pet' },
+        { id: 'p3', name: 'Neon Dog', price: 8000, icon: '🐶', type: 'pet' },
+        { id: 'p4', name: 'Robo Dragon', price: 25000, icon: '🐲', type: 'pet' }
     ];
 
-    const VOUCHERS = { "CYBER2026": 5000, "FREE500": 500 };
-
-    // Init
-    tg.expand();
-    document.getElementById('username').innerText = `@${tg.initDataUnsafe.user?.username || 'PLAYER'}`;
-    
-    if (!localStorage.getItem('welcomeClaimed')) {
-        totalPoints = 5000;
-        localStorage.setItem('welcomeClaimed', 'true');
-        tg.showPopup({ title: "WELCOME", message: "5,000 Credits added!" });
-    }
+    const ITEMS_DATA = [
+        { id: 'i1', name: 'Power Module', price: 10000, icon: 'fa-microchip', type: 'item', desc: 'x3 Click Power' },
+        { id: 'i2', name: 'Luck Matrix', price: 5000, icon: 'fa-shield-heart', type: 'item', desc: 'Prevents Loss' }
+    ];
 
     function updateUI() {
-        document.getElementById('main-points').innerText = totalPoints.toLocaleString();
-        localStorage.setItem('totalPoints', totalPoints);
-        localStorage.setItem('inventory', JSON.stringify(inventory));
-        renderStore();
-        renderInventory();
+        document.getElementById('stat-points').innerText = credits.toLocaleString();
+        document.getElementById('pet-icon').innerText = activePet.icon;
+        document.getElementById('pet-name').innerText = activePet.name;
+        document.getElementById('hunger-bar').style.width = hunger + '%';
+        
+        localStorage.setItem('credits', credits);
+        localStorage.setItem('inv', JSON.stringify(inv));
+        localStorage.setItem('activePet', JSON.stringify(activePet));
+        localStorage.setItem('hunger', hunger);
+        
+        renderShop();
+        renderGear();
     }
 
-    function renderStore() {
-        const container = document.getElementById('store-container');
-        container.innerHTML = storeItems.map(item => {
-            const owned = inventory.some(i => i.id === item.id);
-            return `
-                <div class="item-card">
-                    <i class="fa-solid ${item.icon}" style="color:${item.color}; font-size:1.5rem;"></i>
-                    <h4 style="margin:5px 0; font-size:0.8rem;">${item.name}</h4>
-                    <div style="color:var(--gold); font-size:0.7rem; margin-bottom:8px;">${owned ? '---' : item.price.toLocaleString()}</div>
-                    <button class="btn-main ${owned ? 'owned' : ''}" onclick="${owned ? '' : `buyItem(${item.id})`}">
-                        ${owned ? 'OWNED' : 'BUY'}
-                    </button>
-                </div>
-            `;
-        }).join('');
+    // --- SYSTEMS ---
+    function feedPet() {
+        if (credits >= 50 && hunger < 100) {
+            credits -= 50; hunger = Math.min(100, hunger + 20);
+            tg.HapticFeedback.notificationOccurred('success'); updateUI();
+        } else { tg.showAlert(hunger >= 100 ? "Pet is full!" : "Need 50 credits!"); }
+    }
+    setInterval(() => { if(hunger > 0) { hunger -= 1; updateUI(); } }, 60000);
+
+    function showTab(id, el) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('view-' + id).classList.add('active');
+        el.classList.add('active');
     }
 
-    function renderInventory() {
-        const container = document.getElementById('inventory-container');
-        const empty = document.getElementById('empty-inv');
-        if (inventory.length > 0) {
-            empty.style.display = 'none';
-            container.innerHTML = inventory.map(item => `
-                <div class="item-card" style="border-color:${item.color}55">
-                    <i class="fa-solid ${item.icon}" style="color:${item.color}"></i>
-                    <h4>${item.name}</h4>
-                    <p style="font-size:0.6rem; opacity:0.5;">${item.desc}</p>
-                </div>
-            `).join('');
-        }
+    function buy(item) {
+        if (credits >= item.price) {
+            credits -= item.price; inv.push(item);
+            tg.HapticFeedback.notificationOccurred('success'); updateUI();
+        } else { tg.showAlert("Need more credits!"); }
     }
 
-    function buyItem(id) {
-        const item = storeItems.find(i => i.id === id);
-        if (totalPoints >= item.price) {
-            totalPoints -= item.price;
-            inventory.push(item);
-            tg.HapticFeedback.notificationOccurred('success');
-            updateUI();
-        } else { tg.showAlert("Insufficient credits!"); }
+    function equip(id) {
+        const pet = inv.find(i => i.id === id);
+        if (pet && pet.type === 'pet') { activePet = pet; tg.showPopup({message: `Equipped ${pet.name}`}); updateUI(); }
     }
 
-    function redeemVoucher() {
-        const code = document.getElementById('voucher-input').value.toUpperCase();
-        if (VOUCHERS[code] && !localStorage.getItem('v_' + code)) {
-            totalPoints += VOUCHERS[code];
-            localStorage.setItem('v_' + code, 'true');
-            tg.showPopup({ message: `Voucher Applied: +${VOUCHERS[code]} PTS` });
-            updateUI();
+    function redeem() {
+        const code = document.getElementById('voucher-in').value.toUpperCase();
+        if (code === "CYBER2026" && !localStorage.getItem('v_1')) {
+            credits += 2000; localStorage.setItem('v_1', 't');
+            tg.showPopup({message: "Redeemed 2,000 PTS!"}); updateUI();
         } else { tg.showAlert("Invalid or used code."); }
     }
 
-    function showSection(id, btn) {
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById('section-' + id).classList.add('active');
-        btn.classList.add('active');
-    }
-
-    // --- GAME HANDLERS ---
+    // --- GAMES ---
     function openGame(type) {
+        const area = document.getElementById('game-canvas-area');
         document.getElementById('game-overlay').style.display = 'flex';
-        const content = document.getElementById('game-content');
-        content.innerHTML = "";
+        area.innerHTML = "";
 
         if (type === 'wheel') {
-            content.innerHTML = `
-                <div class="wheel-container"><div class="pointer"></div><canvas id="wheel" width="500" height="500"></canvas></div>
-                <button class="btn-main" style="width:200px; margin-top:20px;" onclick="spinWheel()">SPIN (200 PTS)</button>
-            `;
+            area.innerHTML = `<div class="wheel-box"><div class="pointer"></div><canvas id="canvas-wheel" width="600" height="600"></canvas></div><button class="btn" style="width:200px; margin-top:20px;" onclick="spin()">SPIN (250 PTS)</button>`;
             drawWheel();
         } else if (type === 'tap') {
-            content.innerHTML = `<div id="core" style="width:160px; height:160px; border-radius:50%; border:4px solid var(--cyan-neon); display:flex; align-items:center; justify-content:center; font-size:3.5rem; box-shadow:0 0 20px var(--cyan-neon);"><i class="fa-solid fa-fingerprint"></i></div><h3 style="margin-top:20px;">CORE MINING</h3>`;
-            document.getElementById('core').onclick = () => {
-                let pwr = inventory.some(i => i.id === 1) ? 25 : 5;
-                totalPoints += pwr; document.getElementById('main-points').innerText = totalPoints.toLocaleString();
-                tg.HapticFeedback.impactOccurred('light');
+            area.innerHTML = `<div id="tap-node" style="width:160px; height:160px; border-radius:50%; border:4px solid var(--cyan); display:flex; align-items:center; justify-content:center; font-size:4rem; box-shadow:0 0 20px var(--cyan);"><i class="fa-solid fa-bolt"></i></div><h3 style="margin-top:20px;">MINING...</h3>`;
+            document.getElementById('tap-node').onclick = () => {
+                let m = inv.some(i => i.id === 'i1') ? 30 : 10;
+                credits += m; updateUI(); tg.HapticFeedback.impactOccurred('light');
             };
         } else if (type === 'plinko') {
-            content.innerHTML = `<canvas id="pCanvas" width="300" height="350"></canvas><button onclick="dropBall()" class="btn-main" style="width:180px; margin-top:15px;">DROP (50 PTS)</button>`;
+            area.innerHTML = `<canvas id="pCanvas" width="300" height="350"></canvas><button onclick="dropBall()" class="btn" style="width:180px; margin-top:15px;">DROP (50 PTS)</button>`;
             initPlinko();
-        } else if (type === 'pet') {
-            content.innerHTML = `<i class="fa-solid fa-robot" style="font-size:5rem; color:var(--green-neon);"></i><h3>BOT: ACTIVE</h3><p>Bot is scanning for updates...</p>`;
         }
     }
 
-    // Plinko Logic
+    // Wheel Engine
+    const SLOTS = ["100", "0", "VOUCHER", "0", "1000", "50", "ZERO", "200"];
+    function drawWheel() {
+        const ctx = document.getElementById('canvas-wheel').getContext('2d');
+        const colors = ["#a855f7", "#1e293b", "#fbbf24", "#1e293b", "#22d3ee", "#f472b6", "#1e293b", "#4ade80"];
+        for (let i = 0; i < 8; i++) {
+            ctx.beginPath(); ctx.moveTo(300, 300); ctx.arc(300, 300, 300, i * Math.PI/4, (i+1) * Math.PI/4);
+            ctx.fillStyle = colors[i]; ctx.fill();
+            ctx.save(); ctx.translate(300, 300); ctx.rotate(i * Math.PI/4 + Math.PI/8);
+            ctx.fillStyle = "white"; ctx.font = "bold 35px sans-serif"; ctx.fillText(SLOTS[i], 110, 10); ctx.restore();
+        }
+    }
+    function spin() {
+        if (spinning || credits < 250) return;
+        credits -= 250; updateUI(); spinning = true;
+        const deg = 3600 + Math.floor(Math.random() * 360);
+        document.getElementById('canvas-wheel').style.transform = `rotate(${deg}deg)`;
+        setTimeout(() => {
+            spinning = false;
+            const res = SLOTS[7 - Math.floor((deg % 360) / 45)];
+            if (res === "ZERO") { if(!inv.some(i => i.id === 'i2')) credits = Math.max(0, credits - 500); tg.showAlert("ZERO! Loss protected if Luck Matrix owned."); }
+            else if (res === "VOUCHER") { credits += 2000; tg.showAlert("Win! +2,000 PTS!"); }
+            else { credits += parseInt(res); }
+            updateUI();
+        }, 4000);
+    }
+
+    // Plinko Engine
     let pCtx, balls = [], pins = [];
     function initPlinko() {
-        const canvas = document.getElementById('pCanvas');
-        pCtx = canvas.getContext('2d'); plinkoActive = true; pins = [];
+        const canvas = document.getElementById('pCanvas'); pCtx = canvas.getContext('2d');
+        plinkoActive = true; pins = [];
         for (let r = 2; r < 9; r++) { for (let i = 0; i <= r; i++) pins.push({ x: 150 + (i - r/2) * 30, y: 40 + r * 35 }); }
-        drawPlinko();
+        renderPlinko();
     }
     function dropBall() {
-        if (totalPoints < 50) return tg.showAlert("No credits!");
-        totalPoints -= 50; updateUI();
+        if (credits < 50) return; credits -= 50; updateUI();
         balls.push({ x: 150 + (Math.random()-0.5)*10, y: 10, vx: 0, vy: 2 });
     }
-    function drawPlinko() {
+    function renderPlinko() {
         if (!plinkoActive) return;
         pCtx.fillStyle = "#020617"; pCtx.fillRect(0,0,300,350);
         pCtx.fillStyle = "#444"; pins.forEach(p => { pCtx.beginPath(); pCtx.arc(p.x, p.y, 2, 0, 7); pCtx.fill(); });
@@ -271,42 +262,46 @@
             b.vy += 0.2; b.x += b.vx; b.y += b.vy;
             pins.forEach(p => { if (Math.hypot(b.x - p.x, b.y - p.y) < 8) { b.vy *= -0.5; b.vx = (b.x - p.x) * 0.6; } });
             pCtx.beginPath(); pCtx.arc(b.x, b.y, 5, 0, 7); pCtx.fill();
-            if (b.y > 350) { balls.splice(i, 1); totalPoints += 150; updateUI(); }
+            if (b.y > 350) { balls.splice(i, 1); credits += 150; updateUI(); }
         });
-        requestAnimationFrame(drawPlinko);
+        requestAnimationFrame(renderPlinko);
     }
 
-    // Wheel Logic
-    const prizes = ["100", "0", "500", "LOST", "1000", "50", "0", "200"];
-    function drawWheel() {
-        const ctx = document.getElementById('wheel').getContext('2d');
-        const colors = ["#a855f7", "#1e293b", "#22d3ee", "#1e293b", "#fbbf24", "#f472b6", "#1e293b", "#4ade80"];
-        for (let i = 0; i < 8; i++) {
-            ctx.beginPath(); ctx.moveTo(250, 250); ctx.arc(250, 250, 250, i * Math.PI/4, (i+1) * Math.PI/4);
-            ctx.fillStyle = colors[i]; ctx.fill();
-            ctx.save(); ctx.translate(250, 250); ctx.rotate(i * Math.PI/4 + Math.PI/8);
-            ctx.fillStyle = "white"; ctx.font = "bold 30px Inter"; ctx.fillText(prizes[i], 110, 10); ctx.restore();
-        }
+    // Shop Renders
+    function renderShop() {
+        document.getElementById('store-pets').innerHTML = PETS_DATA.map(p => {
+            const owned = inv.some(i => i.id === p.id);
+            return `<div class="tile" style="flex-direction:column; text-align:center;">
+                <div style="font-size:2rem;">${p.icon}</div>
+                <div style="font-size:0.7rem; font-weight:bold;">${p.name}</div>
+                <button class="btn ${owned?'owned':''}" onclick="${owned?'':`buy(${JSON.stringify(p)})`}" style="font-size:0.6rem;">${owned?'OWNED':p.price}</button>
+            </div>`;
+        }).join('');
+        document.getElementById('store-items').innerHTML = ITEMS_DATA.map(i => {
+            const owned = inv.some(inv => inv.id === i.id);
+            return `<div class="tile" style="flex-direction:column; text-align:center;">
+                <i class="fa-solid ${i.icon}" style="color:var(--cyan)"></i>
+                <div style="font-size:0.7rem; font-weight:bold;">${i.name}</div>
+                <button class="btn ${owned?'owned':''}" onclick="${owned?'':`buy(${JSON.stringify(i)})`}" style="font-size:0.6rem;">${owned?'ACTIVE':i.price}</button>
+            </div>`;
+        }).join('');
     }
-    function spinWheel() {
-        if (isSpinning || totalPoints < 200) return;
-        totalPoints -= 200; updateUI(); isSpinning = true;
-        const deg = 3600 + Math.floor(Math.random() * 360);
-        document.getElementById('wheel').style.transform = `rotate(${deg}deg)`;
-        setTimeout(() => {
-            isSpinning = false;
-            const prizeIdx = 7 - Math.floor((deg % 360) / 45);
-            const win = prizes[prizeIdx];
-            if (win === "LOST") {
-                if (!inventory.some(i => i.id === 2)) totalPoints = Math.max(0, totalPoints - 500);
-                tg.showAlert("Oh no! You hit LOST. (Shield protected you if owned)");
-            } else { totalPoints += parseInt(win); }
-            updateUI();
-        }, 4000);
+
+    function renderGear() {
+        document.getElementById('gear-container').innerHTML = inv.map(item => `
+            <div class="tile" style="flex-direction:column; text-align:center; border-color:var(--pink)">
+                <div style="font-size:1.5rem;">${item.icon.startsWith('fa') ? `<i class="fa-solid ${item.icon}"></i>` : item.icon}</div>
+                <div style="font-size:0.6rem;">${item.name}</div>
+                ${item.type === 'pet' ? `<button class="btn" style="font-size:0.6rem; padding:4px;" onclick="equip('${item.id}')">EQUIP</button>` : ''}
+            </div>
+        `).join('');
     }
 
     function closeGame() { document.getElementById('game-overlay').style.display = 'none'; plinkoActive = false; }
+    
     updateUI();
+    tg.expand();
+    document.getElementById('user-tag').innerText = `@${tg.initDataUnsafe.user?.username || 'GUEST'}`;
 </script>
 </body>
 </html>
