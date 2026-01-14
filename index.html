@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Telegram Arcade - Cyberpunk Ultimate</title>
+    <title>Cyber Arcade Ultimate</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -14,6 +14,7 @@
             --purple-neon: #a855f7;
             --green-neon: #4ade80;
             --gold: #fbbf24;
+            --pink-neon: #f472b6;
             --text-main: #f8fafc;
         }
 
@@ -23,75 +24,59 @@
             background-image: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.15) 0%, transparent 50%);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            touch-action: manipulation;
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
         }
 
-        /* Scanline Effect */
-        body::before {
-            content: " ";
-            position: absolute; top: 0; left: 0; width: 100%; height: 2px;
-            background: rgba(34, 211, 238, 0.1);
-            z-index: 1000; pointer-events: none;
-            animation: scan 8s linear infinite;
-        }
-        @keyframes scan { from { top: 0; } to { top: 100%; } }
-
-        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); }
+        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(34, 211, 238, 0.2); }
         .user-profile { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; }
 
-        .points-panel { text-align: center; padding: 10px 0; }
+        .points-panel { text-align: center; padding: 15px 0; background: rgba(0,0,0,0.2); }
         .points-label { text-transform: uppercase; letter-spacing: 2px; font-size: 0.65rem; color: var(--cyan-neon); }
-        .points-value { font-size: 3rem; font-weight: 900; text-shadow: 0 0 15px rgba(34, 211, 238, 0.4); margin: 0; }
+        .points-value { font-size: 3.2rem; font-weight: 900; text-shadow: 0 0 15px rgba(34, 211, 238, 0.4); margin: 0; }
 
-        .view-section { display: none; flex-direction: column; gap: 15px; padding: 15px; overflow-y: auto; flex-grow: 1; padding-bottom: 100px; }
+        .view-section { display: none; flex-direction: column; gap: 15px; padding: 15px; overflow-y: auto; flex-grow: 1; padding-bottom: 110px; }
         .view-section.active { display: flex; }
 
-        .game-card, .task-card {
+        /* Grids & Cards */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .card {
             background: var(--card-bg);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 16px;
-            padding: 12px 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            padding: 15px;
+            text-align: center;
             transition: 0.2s;
         }
-        .game-card:active { transform: scale(0.98); border-color: var(--cyan-neon); }
+        .card:active { transform: scale(0.97); }
 
-        .game-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; border: 1px solid; }
-        .tap-icon { color: var(--cyan-neon); box-shadow: 0 0 8px var(--cyan-neon); }
-        .plinko-icon { color: var(--purple-neon); box-shadow: 0 0 8px var(--purple-neon); }
-        .pet-icon { color: var(--green-neon); box-shadow: 0 0 8px var(--green-neon); }
+        .game-card { display: flex; align-items: center; text-align: left; gap: 15px; padding: 18px; }
+        .game-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: 1px solid; }
 
-        .game-info h3 { margin: 0; font-size: 1rem; }
-        .game-info p { margin: 2px 0 0; font-size: 0.7rem; opacity: 0.6; }
-
-        .btn-claim { background: var(--gold); color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 0.7rem; cursor: pointer; }
-        .btn-claim:disabled { background: #444; color: #888; }
-
-        .game-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-dark); z-index: 100; display: none; flex-direction: column;
+        .btn-action {
+            background: var(--purple-neon);
+            color: white; border: none; width: 100%; padding: 10px; border-radius: 8px;
+            font-size: 0.75rem; font-weight: bold; cursor: pointer; margin-top: 10px;
         }
+        .btn-action.owned { background: #334155; color: #94a3b8; }
 
-        canvas { background: #000; border: 2px solid var(--purple-neon); border-radius: 10px; max-width: 95%; }
-
+        /* Navigation */
         .bottom-nav {
             position: fixed; bottom: 0; width: 100%;
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(15, 23, 42, 0.98);
             display: flex; justify-content: space-around;
-            padding: 10px 0 25px; border-top: 1px solid rgba(255,255,255,0.1);
-            z-index: 50;
+            padding: 12px 0 25px; border-top: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
         }
-        .nav-item { color: #64748b; font-size: 0.65rem; text-decoration: none; text-align: center; background: none; border: none; flex: 1; cursor: pointer; }
+        .nav-item { color: #64748b; font-size: 0.65rem; text-decoration: none; text-align: center; background: none; border: none; flex: 1; }
         .nav-item.active { color: var(--cyan-neon); }
-        .nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
+        .nav-item i { font-size: 1.3rem; margin-bottom: 5px; }
 
-        .leaderboard-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        /* Game Overlays */
+        #game-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark); z-index: 200; display: none; flex-direction: column;
+        }
+        canvas { background: #000; border: 2px solid var(--purple-neon); border-radius: 12px; max-width: 95%; }
     </style>
 </head>
 <body>
@@ -99,138 +84,132 @@
     <header>
         <div class="user-profile">
             <i class="fa-solid fa-user-astronaut"></i>
-            <span id="username">WELCOME_USER</span>
+            <span id="username">PLAYER</span>
         </div>
-        <div style="font-size: 0.8rem; color: var(--green-neon);"><i class="fa-solid fa-signal"></i> ONLINE</div>
+        <div style="font-size: 0.7rem; color: var(--green-neon);"><i class="fa-solid fa-bolt"></i> ONLINE</div>
     </header>
 
     <div class="points-panel">
-        <div class="points-label">Total Balance</div>
+        <div class="points-label">Total Credits</div>
         <div class="points-value" id="main-points">0</div>
     </div>
 
     <div id="section-home" class="view-section active">
-        <div class="game-card" onclick="openGame('tap')">
-            <div class="game-icon tap-icon"><i class="fa-solid fa-hand-pointer"></i></div>
-            <div class="game-info"><h3>CYBER CLICKER</h3><p>Tap core for instant credits</p></div>
+        <div class="card game-card" onclick="openGame('tap')">
+            <div class="game-icon" style="color:var(--cyan-neon); border-color:var(--cyan-neon);"><i class="fa-solid fa-hand-pointer"></i></div>
+            <div><h4 style="margin:0;">CYBER CLICKER</h4><p style="margin:2px 0 0; font-size:0.7rem; opacity:0.6;">Manual mining core</p></div>
         </div>
-        <div class="game-card" onclick="openGame('plinko')">
-            <div class="game-icon plinko-icon"><i class="fa-solid fa-tower-broadcast"></i></div>
-            <div class="game-info"><h3>PLINKO DROPS</h3><p>Physics-based luck system</p></div>
+        <div class="card game-card" onclick="openGame('plinko')">
+            <div class="game-icon" style="color:var(--purple-neon); border-color:var(--purple-neon);"><i class="fa-solid fa-tower-broadcast"></i></div>
+            <div><h4 style="margin:0;">PLINKO DROPS</h4><p style="margin:2px 0 0; font-size:0.7rem; opacity:0.6;">Physics luck engine</p></div>
         </div>
-        <div class="game-card" onclick="openGame('pet')">
-            <div class="game-icon pet-icon"><i class="fa-solid fa-microchip"></i></div>
-            <div class="game-info"><h3>NEURAL PET</h3><p>Battery maintenance mode</p></div>
+        <div class="card game-card" onclick="openGame('pet')">
+            <div class="game-icon" style="color:var(--green-neon); border-color:var(--green-neon);"><i class="fa-solid fa-microchip"></i></div>
+            <div><h4 style="margin:0;">NEURAL BOT</h4><p style="margin:2px 0 0; font-size:0.7rem; opacity:0.6;">Battery maintenance</p></div>
         </div>
     </div>
 
-    <div id="section-earn" class="view-section">
-        <div class="task-card">
-            <div class="game-icon" style="color:var(--gold); border-color:var(--gold);"><i class="fa-solid fa-gift"></i></div>
-            <div class="game-info" style="flex-grow:1;">
-                <h3>DAILY LOGIN</h3>
-                <p id="claim-timer">Ready to claim</p>
-            </div>
-            <button id="daily-claim-btn" class="btn-claim" onclick="claimDaily()">CLAIM</button>
-        </div>
-        
-        <h4 style="margin: 10px 0 0; color:var(--cyan-neon); font-size: 0.8rem;">SOCIAL MISSIONS</h4>
-        <div class="task-card">
-            <i class="fa-brands fa-telegram" style="font-size: 1.5rem; color: #229ED9;"></i>
-            <div class="game-info" style="flex-grow:1;"><h3>JOIN CHANNEL</h3><p>+1000 Credits</p></div>
-            <button class="btn-claim" onclick="doTask('https://t.me/yourchannel', 1000, this)">GO</button>
-        </div>
-        <div class="task-card">
-            <i class="fa-brands fa-x-twitter" style="font-size: 1.5rem; color: #fff;"></i>
-            <div class="game-info" style="flex-grow:1;"><h3>FOLLOW ON X</h3><p>+1000 Credits</p></div>
-            <button class="btn-claim" onclick="doTask('https://twitter.com/yourhandle', 1000, this)">GO</button>
-        </div>
+    <div id="section-store" class="view-section">
+        <h3 style="color:var(--purple-neon); font-size:1rem; margin:0;"><i class="fa-solid fa-shop"></i> NEON STORE</h3>
+        <div class="grid" id="store-container"></div>
+    </div>
+
+    <div id="section-inventory" class="view-section">
+        <h3 style="color:var(--pink-neon); font-size:1rem; margin:0;"><i class="fa-solid fa-box"></i> MY ITEMS</h3>
+        <div class="grid" id="inventory-container"></div>
+        <div id="empty-inventory" style="text-align:center; padding:50px; opacity:0.4; font-size:0.8rem;">No items collected yet.</div>
     </div>
 
     <div id="section-rank" class="view-section">
-        <h3 style="text-align: center; color: var(--cyan-neon);"><i class="fa-solid fa-trophy"></i> TOP OPERATORS</h3>
-        <div id="leaderboard-list">
-            <div style="text-align:center; padding:20px; opacity:0.5;">Loading Global Data...</div>
-        </div>
+        <h3 style="text-align: center; color: var(--cyan-neon); font-size:1rem;"><i class="fa-solid fa-trophy"></i> LEADERBOARD</h3>
+        <div id="leaderboard-list"></div>
     </div>
 
-    <div class="game-overlay" id="game-overlay">
-        <div style="padding: 20px;" onclick="closeGame()"><i class="fa-solid fa-chevron-left"></i> BACK</div>
-        <div id="game-content" style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 20px;"></div>
+    <div id="game-overlay">
+        <div style="padding: 20px; font-weight:bold;" onclick="closeGame()"><i class="fa-solid fa-chevron-left"></i> BACK TO HUB</div>
+        <div id="game-content" style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;"></div>
     </div>
 
     <nav class="bottom-nav">
-        <button class="nav-item active" onclick="showSection('home', this)"><i class="fa-solid fa-gamepad"></i><br>GAMES</button>
-        <button class="nav-item" onclick="showSection('earn', this)"><i class="fa-solid fa-coins"></i><br>EARN</button>
+        <button class="nav-item active" onclick="showSection('home', this)"><i class="fa-solid fa-gamepad"></i><br>PLAY</button>
+        <button class="nav-item" onclick="showSection('store', this)"><i class="fa-solid fa-shop"></i><br>STORE</button>
+        <button class="nav-item" onclick="showSection('inventory', this)"><i class="fa-solid fa-box"></i><br>ITEMS</button>
         <button class="nav-item" onclick="showSection('rank', this)"><i class="fa-solid fa-ranking-star"></i><br>RANK</button>
-        <button class="nav-item" onclick="shareScore()"><i class="fa-solid fa-user-plus"></i><br>INVITE</button>
     </nav>
 
 <script>
     const tg = window.Telegram.WebApp;
-    // --- REPLACE THIS WITH YOUR WORKER URL ---
-    const API_URL = "https://ricotg-arcade.pages.dev/"; 
+    const API_URL = "YOUR_CLOUDFLARE_WORKER_URL"; // ADD YOUR URL HERE
     
-    tg.expand();
-    tg.ready();
-
-    // Load points (Default 0 now because Welcome Bonus adds the starting amount)
     let totalPoints = parseInt(localStorage.getItem('totalPoints')) || 0;
-    let lastClaim = parseInt(localStorage.getItem('lastClaim')) || 0;
+    let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
     let plinkoActive = false;
 
-    // Initialization
-    document.getElementById('username').innerText = `@${tg.initDataUnsafe.user?.username || 'PLAYER_01'}`;
-    
-    // WELCOME BONUS LOGIC
+    const storeItems = [
+        { id: 1, name: "Gold Chip", price: 10000, icon: "fa-bolt", color: "#fbbf24", desc: "x2 Click Power" },
+        { id: 2, name: "Neon Frame", price: 5000, icon: "fa-square", color: "#a855f7", desc: "Cosmetic Profile" },
+        { id: 3, name: "Master Key", price: 50000, icon: "fa-key", color: "#22d3ee", desc: "Access Secrets" }
+    ];
+
+    tg.expand();
+    document.getElementById('username').innerText = `@${tg.initDataUnsafe.user?.username || 'GUEST'}`;
+
+    // Welcome Bonus
     if (!localStorage.getItem('welcomeClaimed')) {
-        totalPoints = 5000; // Give 5,000 Credits
+        totalPoints = 5000;
         localStorage.setItem('welcomeClaimed', 'true');
-        localStorage.setItem('totalPoints', totalPoints);
-        
-        tg.showPopup({
-            title: "🎁 WELCOME BONUS",
-            message: "You received 5,000 Cyber Credits for joining the Arcade!",
-            buttons: [{type: 'ok'}]
-        });
-        tg.HapticFeedback.notificationOccurred('success');
+        tg.showPopup({ title: "🎁 WELCOME!", message: "Started you with 5,000 Credits!" });
     }
 
-    updatePointsDisplay();
-    updateLeaderboard();
-    setInterval(updateDailyTimer, 60000);
-    updateDailyTimer();
-
-    // Core Logic
-    async function updatePointsDisplay() {
+    function updateUI() {
         document.getElementById('main-points').innerText = totalPoints.toLocaleString();
         localStorage.setItem('totalPoints', totalPoints);
-        
-        // Sync to Cloudflare
-        const username = tg.initDataUnsafe.user?.username || "Anonymous";
-        try {
-            await fetch(`${API_URL}/save`, {
-                method: "POST",
-                body: JSON.stringify({ username, points: totalPoints }),
-                headers: { "Content-Type": "application/json" }
-            });
-        } catch (e) { console.warn("Score sync delayed..."); }
+        localStorage.setItem('inventory', JSON.stringify(inventory));
+        renderStore();
+        renderInventory();
     }
 
-    async function updateLeaderboard() {
-        const list = document.getElementById('leaderboard-list');
-        try {
-            const response = await fetch(`${API_URL}/list`);
-            const topPlayers = await response.json();
-            
-            list.innerHTML = topPlayers.map((u, i) => `
-                <div class="leaderboard-item">
-                    <span>#${i+1} @${u.username}</span>
-                    <span style="color:var(--cyan-neon)">${u.points.toLocaleString()}</span>
+    function renderStore() {
+        const container = document.getElementById('store-container');
+        container.innerHTML = storeItems.map(item => {
+            const owned = inventory.some(i => i.id === item.id);
+            return `
+                <div class="card">
+                    <i class="fa-solid ${item.icon}" style="color:${item.color}; font-size:1.5rem;"></i>
+                    <h4 style="margin:5px 0; font-size:0.8rem;">${item.name}</h4>
+                    <span style="color:var(--gold); font-size:0.7rem; font-weight:bold;">${owned ? '---' : item.price.toLocaleString() + ' PTS'}</span>
+                    <button class="btn-action ${owned ? 'owned' : ''}" onclick="${owned ? '' : `buyItem(${item.id})`}">
+                        ${owned ? 'OWNED' : 'BUY'}
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderInventory() {
+        const container = document.getElementById('inventory-container');
+        const empty = document.getElementById('empty-inventory');
+        if (inventory.length > 0) {
+            empty.style.display = 'none';
+            container.innerHTML = inventory.map(item => `
+                <div class="card" style="border-color:${item.color}55">
+                    <i class="fa-solid ${item.icon}" style="color:${item.color}"></i>
+                    <h4>${item.name}</h4>
+                    <p style="font-size:0.6rem; opacity:0.5;">${item.desc}</p>
                 </div>
             `).join('');
-        } catch (e) {
-            list.innerHTML = "<div style='text-align:center; padding:20px;'>Database Offline</div>";
+        }
+    }
+
+    function buyItem(id) {
+        const item = storeItems.find(i => i.id === id);
+        if (totalPoints >= item.price) {
+            totalPoints -= item.price;
+            inventory.push(item);
+            tg.HapticFeedback.notificationOccurred('success');
+            updateUI();
+        } else {
+            tg.showAlert("Not enough credits!");
         }
     }
 
@@ -239,55 +218,10 @@
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById('section-' + id).classList.add('active');
         btn.classList.add('active');
-        if(id === 'rank') updateLeaderboard();
         tg.HapticFeedback.impactOccurred('light');
     }
 
-    function shareScore() {
-        const text = `🎮 Join my Cyber Arcade! I have ${totalPoints} credits. Can you beat me?`;
-        tg.switchInlineQuery(text);
-    }
-
-    // Daily Reward Logic
-    function updateDailyTimer() {
-        const now = Date.now();
-        const diff = now - lastClaim;
-        const btn = document.getElementById('daily-claim-btn');
-        const timerText = document.getElementById('claim-timer');
-
-        if (diff >= 86400000) {
-            btn.disabled = false;
-            btn.innerText = "CLAIM";
-            timerText.innerText = "Daily bonus is ready!";
-        } else {
-            btn.disabled = true;
-            btn.innerText = "WAIT";
-            const hrs = Math.floor((86400000 - diff) / 3600000);
-            timerText.innerText = `Next claim in ${hrs}h`;
-        }
-    }
-
-    function claimDaily() {
-        totalPoints += 500;
-        lastClaim = Date.now();
-        localStorage.setItem('lastClaim', lastClaim);
-        updatePointsDisplay();
-        updateDailyTimer();
-        tg.showPopup({ message: "Daily reward of 500 credits added!" });
-    }
-
-    function doTask(url, reward, btn) {
-        tg.openLink(url);
-        setTimeout(() => {
-            totalPoints += reward;
-            updatePointsDisplay();
-            btn.innerText = "DONE";
-            btn.disabled = true;
-            tg.showPopup({ message: `Task reward of ${reward} claimed!` });
-        }, 5000);
-    }
-
-    // --- GAME ENGINE ---
+    // --- GAMES ENGINE ---
     function openGame(type) {
         const overlay = document.getElementById('game-overlay');
         const content = document.getElementById('game-content');
@@ -295,33 +229,23 @@
         content.innerHTML = "";
 
         if (type === 'tap') {
-            content.innerHTML = `
-                <div id="tap-circle" style="width:180px; height:180px; background:radial-gradient(circle, var(--cyan-neon), transparent); border-radius:50%; display:flex; align-items:center; justify-content:center; border:4px solid var(--cyan-neon); box-shadow: 0 0 20px var(--cyan-neon);">
-                    <i class="fa-solid fa-fingerprint" style="font-size:4rem;"></i>
-                </div>
-                <h2 style="margin-top:30px; color:var(--cyan-neon);">CORE EXTRACTION</h2>
-                <p>Tap core to mine credits</p>
-            `;
-            const circle = document.getElementById('tap-circle');
-            const handler = (e) => {
+            content.innerHTML = `<div id="core" style="width:180px; height:180px; background:radial-gradient(circle, var(--cyan-neon), transparent); border-radius:50%; border:4px solid var(--cyan-neon); display:flex; align-items:center; justify-content:center; font-size:4rem; box-shadow:0 0 30px var(--cyan-neon);"><i class="fa-solid fa-fingerprint"></i></div><h2 style="margin-top:20px;">MINING CORE</h2>`;
+            document.getElementById('core').addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                totalPoints += 2; updatePointsDisplay();
+                let power = inventory.some(i => i.id === 1) ? 10 : 2; // Check for Gold Chip
+                totalPoints += power;
+                document.getElementById('main-points').innerText = totalPoints.toLocaleString();
                 tg.HapticFeedback.impactOccurred('light');
-                circle.style.transform = "scale(0.95)";
-                setTimeout(() => circle.style.transform = "scale(1)", 50);
-            };
-            circle.addEventListener('touchstart', handler);
+            });
         } else if (type === 'plinko') {
-            content.innerHTML = `<canvas id="pCanvas" width="300" height="350"></canvas>
-            <button onclick="dropBall()" class="btn-claim" style="margin-top:20px; padding:15px 30px;">DROP BALL (50 pts)</button>`;
+            content.innerHTML = `<canvas id="pCanvas" width="300" height="350"></canvas><button onclick="dropBall()" class="btn-action" style="width:200px; margin-top:15px;">DROP (50 PTS)</button>`;
             initPlinko();
         } else if (type === 'pet') {
-            content.innerHTML = `<i class="fa-solid fa-robot" style="font-size:6rem; color:var(--green-neon);"></i>
-            <h3>NEURAL BOT</h3><p>Battery: 100%</p>
-            <button class="btn-claim" onclick="tg.showPopup({message:'Battery is currently full!'})">RECHARGE</button>`;
+            content.innerHTML = `<i class="fa-solid fa-robot" style="font-size:5rem; color:var(--green-neon);"></i><h3>BOT STATUS: ONLINE</h3><p>Maintenance mode active.</p>`;
         }
     }
 
+    // Plinko Logic
     let pCtx, balls = [], pins = [];
     function initPlinko() {
         const canvas = document.getElementById('pCanvas');
@@ -329,44 +253,40 @@
         plinkoActive = true;
         pins = [];
         for (let r = 2; r < 9; r++) {
-            for (let i = 0; i <= r; i++) pins.push({ x: 150 + (i - r/2) * 30, y: 30 + r * 35 });
+            for (let i = 0; i <= r; i++) pins.push({ x: 150 + (i - r/2) * 30, y: 40 + r * 35 });
         }
-        requestAnimationFrame(updatePlinko);
+        drawPlinko();
     }
-
     function dropBall() {
-        if (totalPoints < 50) return tg.showAlert("Need 50 credits!");
-        totalPoints -= 50; updatePointsDisplay();
-        balls.push({ x: 150 + (Math.random()-0.5)*5, y: 10, vx: 0, vy: 2 });
+        if (totalPoints < 50) return tg.showAlert("Need 50 Credits!");
+        totalPoints -= 50; updateUI();
+        balls.push({ x: 150 + (Math.random()-0.5)*10, y: 10, vx: 0, vy: 2 });
     }
-
-    function updatePlinko() {
-        if (!plinkoActive || !pCtx) return;
-        pCtx.fillStyle = "#000"; pCtx.fillRect(0,0,300,350);
+    function drawPlinko() {
+        if (!plinkoActive) return;
+        pCtx.fillStyle = "#020617"; pCtx.fillRect(0,0,300,350);
         pCtx.fillStyle = "#444";
         pins.forEach(p => { pCtx.beginPath(); pCtx.arc(p.x, p.y, 2, 0, Math.PI*2); pCtx.fill(); });
         pCtx.fillStyle = "#a855f7";
-        balls.forEach((b, idx) => {
-            b.vy += 0.15; b.x += b.vx; b.y += b.vy;
+        balls.forEach((b, i) => {
+            b.vy += 0.2; b.x += b.vx; b.y += b.vy;
             pins.forEach(p => {
                 let d = Math.hypot(b.x - p.x, b.y - p.y);
-                if (d < 8) { b.vy *= -0.4; b.vx = (b.x - p.x) * 0.5; tg.HapticFeedback.impactOccurred('light'); }
+                if (d < 8) { b.vy *= -0.5; b.vx = (b.x - p.x) * 0.6; tg.HapticFeedback.impactOccurred('light'); }
             });
             pCtx.beginPath(); pCtx.arc(b.x, b.y, 5, 0, Math.PI*2); pCtx.fill();
-            if (b.y > 350) { 
-                balls.splice(idx,1); 
-                let win = [0, 50, 100, 500, 20][Math.floor(Math.random()*5)];
-                totalPoints += win; updatePointsDisplay();
-            }
+            if (b.y > 350) { balls.splice(i, 1); totalPoints += 100; updateUI(); }
         });
-        requestAnimationFrame(updatePlinko);
+        requestAnimationFrame(drawPlinko);
     }
 
     function closeGame() {
         document.getElementById('game-overlay').style.display = 'none';
         plinkoActive = false;
-        updateLeaderboard();
+        updateUI();
     }
+
+    updateUI();
 </script>
 </body>
 </html>
