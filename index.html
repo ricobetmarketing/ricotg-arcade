@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cyber Arcade Master</title>
+    <title>Cyber Arcade Infinity</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -15,257 +15,307 @@
 
         body {
             margin: 0; padding: 0; background: var(--bg); color: var(--text);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; height: 100vh; overflow: hidden;
-            background-image: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.1) 0%, transparent 50%);
+            font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden;
+            background-image: radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.15) 0%, transparent 50%);
         }
 
-        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .stat-banner { text-align: center; padding: 15px 0; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .credits-val { font-size: 2.5rem; font-weight: 900; color: white; text-shadow: 0 0 10px var(--cyan); margin: 0; }
+        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .stat-panel { text-align: center; padding: 15px 0; background: rgba(0,0,0,0.2); }
+        .stat-val { font-size: 2.8rem; font-weight: 900; text-shadow: 0 0 15px var(--cyan); margin: 0; }
 
-        .view { display: none; flex-direction: column; gap: 15px; padding: 15px; overflow-y: auto; height: calc(100vh - 250px); padding-bottom: 100px; }
+        .view { display: none; flex-direction: column; gap: 12px; padding: 15px; overflow-y: auto; height: calc(100vh - 250px); padding-bottom: 100px; }
         .view.active { display: flex; }
 
-        /* UI Blocks */
-        .tile { background: var(--card); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 15px; display: flex; align-items: center; gap: 15px; }
-        .btn { background: var(--purple); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s; }
-        .btn:active { transform: scale(0.95); }
-        .btn.owned { background: #334155; color: #94a3b8; }
+        /* Pet HUD */
+        .pet-stage { background: var(--card); border: 1px solid var(--cyan); border-radius: 24px; padding: 20px; text-align: center; position: relative; margin-bottom: 10px; }
+        .lvl-tag { position: absolute; top: 12px; right: 15px; background: var(--gold); color: black; padding: 2px 12px; border-radius: 20px; font-weight: 900; font-size: 0.7rem; }
+        #pet-img { font-size: 5rem; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); margin: 15px 0; display: inline-block; }
+        
+        .prog-row { margin: 8px 0; text-align: left; }
+        .prog-lbl { font-size: 0.6rem; text-transform: uppercase; color: var(--cyan); display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .bar-out { width: 100%; height: 8px; background: #1e293b; border-radius: 10px; overflow: hidden; }
+        .bar-in { height: 100%; transition: width 0.4s ease; }
 
-        /* Pet Section */
-        .pet-container { background: rgba(255,255,255,0.03); border: 1px solid rgba(34, 211, 238, 0.2); border-radius: 24px; padding: 20px; text-align: center; margin-bottom: 10px; }
-        .pet-visual { font-size: 4.5rem; filter: drop-shadow(0 0 15px var(--cyan)); margin-bottom: 10px; }
-        .hunger-track { width: 100%; height: 10px; background: #1e293b; border-radius: 5px; overflow: hidden; margin: 10px 0; border: 1px solid rgba(255,255,255,0.1); }
-        .hunger-fill { height: 100%; background: linear-gradient(90deg, var(--green), #bbf7d0); transition: 0.5s ease-out; }
+        /* Game Tiles */
+        .tile { background: var(--card); border: 1px solid rgba(255,255,255,0.05); border-radius: 18px; padding: 15px; display: flex; align-items: center; gap: 15px; cursor: pointer; }
+        .tile-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border: 1px solid rgba(255,255,255,0.1); }
 
-        /* Overlays */
-        #game-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; display: none; flex-direction: column; }
-        .wheel-shell { position: relative; width: 280px; height: 280px; margin: 20px auto; }
-        #wheel-canvas { width: 100%; height: 100%; border-radius: 50%; border: 5px solid var(--gold); transition: transform 4s cubic-bezier(0.1, 0, 0.2, 1); }
-        .wheel-arrow { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 35px solid var(--gold); z-index: 10; }
+        .btn { background: var(--purple); color: white; border: none; padding: 12px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; }
+        .btn:disabled { background: #334155; color: #64748b; }
+
+        /* Game Overlays */
+        #game-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; display: none; flex-direction: column; }
+        .canvas-container { position: relative; margin: 20px auto; }
+        #wheel-canvas { border-radius: 50%; border: 4px solid var(--gold); transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); }
+        .wheel-pin { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid var(--gold); z-index: 10; }
 
         /* Navbar */
         .nav { position: fixed; bottom: 0; width: 100%; display: flex; background: #0f172a; padding: 12px 0 35px; border-top: 1px solid rgba(255,255,255,0.1); }
-        .nav-btn { flex: 1; text-align: center; color: #64748b; background: none; border: none; font-size: 0.65rem; font-weight: bold; }
-        .nav-btn.active { color: var(--cyan); }
-        .nav-btn i { font-size: 1.4rem; display: block; margin-bottom: 5px; }
+        .nav-tab { flex: 1; text-align: center; color: #64748b; background: none; border: none; font-size: 0.65rem; }
+        .nav-tab.active { color: var(--cyan); }
+        .nav-tab i { font-size: 1.4rem; display: block; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <header>
-        <div id="display-user">@PLAYER</div>
-        <div style="color:var(--green); font-size:0.7rem;">ARCADE v2.0</div>
+        <div id="user-tag">@PLAYER</div>
+        <div style="color:var(--green); font-size:0.7rem;"><i class="fa-solid fa-bolt"></i> SYSTEM_ONLINE</div>
     </header>
 
-    <div class="stat-banner">
-        <div style="font-size:0.7rem; color:var(--cyan); letter-spacing:2px; font-weight:bold;">BALANCE</div>
-        <div class="credits-val" id="count-pts">0</div>
+    <div class="stat-panel">
+        <p style="margin:0; font-size:0.6rem; color:var(--cyan); letter-spacing:2px;">CREDIT BALANCE</p>
+        <h1 class="stat-val" id="val-credits">0</h1>
     </div>
 
     <div id="view-hub" class="view active">
-        <div class="pet-container">
-            <div id="main-pet-icon" class="pet-visual">🤖</div>
-            <h3 id="main-pet-name" style="margin:0;">Arcade Bot</h3>
-            <div class="hunger-track"><div id="hunger-bar" class="hunger-fill"></div></div>
-            <button class="btn" style="width: auto; padding: 8px 20px; background:var(--green);" onclick="giveFood()">FEED (50 PTS)</button>
+        <div class="pet-stage">
+            <div class="lvl-tag">LVL <span id="val-lvl">1</span></div>
+            <div id="pet-img">🤖</div>
+            <h4 id="pet-name" style="margin:5px 0;">Alpha Bot</h4>
+            
+            <div class="prog-row">
+                <div class="prog-lbl"><span>Evolution XP</span><span id="txt-xp">0/150</span></div>
+                <div class="bar-out"><div id="fill-xp" class="bar-in" style="width:0%; background:var(--purple);"></div></div>
+            </div>
+            <div class="prog-row">
+                <div class="prog-lbl"><span>Hunger</span><span id="txt-hg">100%</span></div>
+                <div class="bar-out"><div id="fill-hg" class="bar-in" style="width:100%; background:var(--green);"></div></div>
+            </div>
+            <button class="btn" style="background:var(--green); margin-top:10px; padding:10px;" onclick="feed()">FEED (50 PTS)</button>
         </div>
 
         <div class="tile" onclick="openGame('wheel')">
-            <i class="fa-solid fa-dharmachakra" style="color:var(--gold); font-size:1.8rem;"></i>
-            <div><h4 style="margin:0;">LUCKY WHEEL</h4><p style="margin:0; font-size:0.7rem; opacity:0.6;">Try your luck - 250 PTS</p></div>
+            <div class="tile-icon" style="color:var(--gold);"><i class="fa-solid fa-dharmachakra"></i></div>
+            <div><h4 style="margin:0;">LUCKY WHEEL</h4><p style="margin:0; font-size:0.6rem; opacity:0.6;">Cost: 250 PTS | Win up to 5000</p></div>
         </div>
         <div class="tile" onclick="openGame('plinko')">
-            <i class="fa-solid fa-circle-dot" style="color:var(--purple); font-size:1.8rem;"></i>
-            <div><h4 style="margin:0;">PLINKO</h4><p style="margin:0; font-size:0.7rem; opacity:0.6;">Drop for rewards</p></div>
+            <div class="tile-icon" style="color:var(--pink);"><i class="fa-solid fa-circle-nodes"></i></div>
+            <div><h4 style="margin:0;">CYBER PLINKO</h4><p style="margin:0; font-size:0.6rem; opacity:0.6;">Cost: 100 PTS | Physics luck</p></div>
         </div>
         <div class="tile" onclick="openGame('tap')">
-            <i class="fa-solid fa-fingerprint" style="color:var(--cyan); font-size:1.8rem;"></i>
-            <div><h4 style="margin:0;">CORE MINER</h4><p style="margin:0; font-size:0.7rem; opacity:0.6;">Manual click earn</p></div>
+            <div class="tile-icon" style="color:var(--cyan);"><i class="fa-solid fa-fingerprint"></i></div>
+            <div><h4 style="margin:0;">CORE CLICKER</h4><p style="margin:0; font-size:0.6rem; opacity:0.6;">Manual mining for XP & Points</p></div>
         </div>
     </div>
 
     <div id="view-shop" class="view">
-        <h3 style="color:var(--purple); margin:0;">PET MARKET</h3>
-        <div id="pet-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
+        <h3 style="color:var(--purple); margin:0;">PET EXCHANGE</h3>
+        <div id="grid-pets" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
         
-        <h3 style="color:var(--cyan); margin:15px 0 5px 0;">UPGRADES</h3>
-        <div id="item-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
-    </div>
-
-    <div id="view-earn" class="view">
-        <div class="tile" style="flex-direction:column; align-items:flex-start;">
-            <h4 style="margin:0;">VOUCHER CODE</h4>
-            <input type="text" id="code-in" placeholder="Enter Code..." style="width:90%; padding:12px; background:rgba(0,0,0,0.4); border:1px solid var(--purple); color:white; border-radius:10px; margin:10px 0;">
-            <button class="btn" onclick="redeemCode()">ACTIVATE</button>
-        </div>
+        <h3 style="color:var(--cyan); margin:15px 0 5px 0;">CORE MODULES</h3>
+        <div id="grid-items" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
     </div>
 
     <div id="view-gear" class="view">
-        <h3 style="color:var(--pink); margin:0;">MY GEAR</h3>
-        <div id="gear-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
+        <h3 style="color:var(--pink); margin:0;">MY STORAGE</h3>
+        <div id="grid-inv" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
     </div>
 
-    <div id="game-screen">
-        <div style="padding:20px; font-weight:bold;" onclick="exitGame()"><i class="fa-solid fa-xmark"></i> CLOSE</div>
-        <div id="screen-content" style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;"></div>
+    <div id="game-overlay">
+        <div style="padding:20px; font-weight:bold; cursor:pointer;" onclick="closeGame()"><i class="fa-solid fa-chevron-left"></i> BACK TO HUB</div>
+        <div id="game-content" style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;"></div>
     </div>
 
     <nav class="nav">
-        <button class="nav-btn active" onclick="tab('hub', this)"><i class="fa-solid fa-gamepad"></i>PLAY</button>
-        <button class="nav-btn" onclick="tab('shop', this)"><i class="fa-solid fa-cart-shopping"></i>SHOP</button>
-        <button class="nav-btn" onclick="tab('earn', this)"><i class="fa-solid fa-bolt"></i>EARN</button>
-        <button class="nav-btn" onclick="tab('gear', this)"><i class="fa-solid fa-box-open"></i>GEAR</button>
+        <button class="nav-tab active" onclick="switchView('hub', this)"><i class="fa-solid fa-terminal"></i>HUB</button>
+        <button class="nav-tab" onclick="switchView('shop', this)"><i class="fa-solid fa-basket-shopping"></i>SHOP</button>
+        <button class="nav-tab" onclick="switchView('gear', this)"><i class="fa-solid fa-microchip"></i>GEAR</button>
     </nav>
 
 <script>
     const tg = window.Telegram.WebApp;
     let credits = parseInt(localStorage.getItem('credits')) || 5000;
-    let inventory = JSON.parse(localStorage.getItem('inventory')) || [{id:'p1', name:'Arcade Bot', icon:'🤖', type:'pet'}];
-    let activePet = JSON.parse(localStorage.getItem('activePet')) || inventory[0];
+    let inv = JSON.parse(localStorage.getItem('inv')) || [{id:'p1', name:'Bot', icon:'🤖', type:'pet'}];
+    let activePet = JSON.parse(localStorage.getItem('activePet')) || inv[0];
     let hunger = parseInt(localStorage.getItem('hunger')) || 100;
+    let xp = parseInt(localStorage.getItem('xp')) || 0;
+    let lvl = parseInt(localStorage.getItem('lvl')) || 1;
     let spinning = false;
 
-    const PETS = [
+    const PET_SHOP = [
         { id: 'p2', name: 'Cyber Cat', price: 5000, icon: '🐱', type: 'pet' },
         { id: 'p3', name: 'Neon Dog', price: 10000, icon: '🐶', type: 'pet' },
-        { id: 'p4', name: 'Robo Dragon', price: 50000, icon: '🐲', type: 'pet' }
+        { id: 'p4', name: 'Void Dragon', price: 25000, icon: '🐲', type: 'pet' }
     ];
 
-    const ITEMS = [
-        { id: 'u1', name: 'Super Chip', price: 15000, icon: 'fa-microchip', type: 'item', desc: 'x5 Click Multi' },
-        { id: 'u2', name: 'Void Shield', price: 7000, icon: 'fa-shield-halved', type: 'item', desc: 'Wheel Protection' }
+    const ITEM_SHOP = [
+        { id: 'u1', name: 'Hyper Chip', price: 15000, icon: 'fa-microchip', type: 'item', desc: 'x5 Taps' },
+        { id: 'u2', name: 'Luck Matrix', price: 5000, icon: 'fa-shield-halved', type: 'item', desc: 'Zero Block' }
     ];
 
-    function update() {
-        document.getElementById('count-pts').innerText = credits.toLocaleString();
-        document.getElementById('main-pet-icon').innerText = activePet.icon;
-        document.getElementById('main-pet-name').innerText = activePet.name;
-        document.getElementById('hunger-bar').style.width = hunger + '%';
-        
+    function save() {
         localStorage.setItem('credits', credits);
-        localStorage.setItem('inventory', JSON.stringify(inventory));
+        localStorage.setItem('inv', JSON.stringify(inv));
         localStorage.setItem('activePet', JSON.stringify(activePet));
         localStorage.setItem('hunger', hunger);
-        
-        renderLists();
+        localStorage.setItem('xp', xp);
+        localStorage.setItem('lvl', lvl);
+        updateUI();
     }
 
-    function tab(id, el) {
+    function updateUI() {
+        document.getElementById('val-credits').innerText = credits.toLocaleString();
+        document.getElementById('pet-img').innerText = activePet.icon;
+        document.getElementById('pet-img').style.transform = `scale(${1 + (lvl * 0.15)})`;
+        document.getElementById('pet-name').innerText = activePet.name;
+        document.getElementById('val-lvl').innerText = lvl;
+        
+        let targetXP = lvl * 150;
+        document.getElementById('txt-xp').innerText = `${xp}/${targetXP}`;
+        document.getElementById('fill-xp').style.width = (xp / targetXP * 100) + '%';
+        document.getElementById('txt-hg').innerText = hunger + '%';
+        document.getElementById('fill-hg').style.width = hunger + '%';
+
+        renderShop();
+        renderGear();
+    }
+
+    function addXP(val) {
+        xp += val;
+        let target = lvl * 150;
+        if (xp >= target) { xp = 0; lvl++; tg.HapticFeedback.notificationOccurred('success'); }
+        save();
+    }
+
+    function feed() {
+        if (credits >= 50 && hunger < 100) {
+            credits -= 50; hunger = Math.min(100, hunger + 25);
+            tg.HapticFeedback.impactOccurred('medium'); save();
+        }
+    }
+
+    setInterval(() => { if(hunger > 0) hunger--; save(); }, 45000);
+
+    function switchView(id, el) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
         document.getElementById('view-' + id).classList.add('active');
         el.classList.add('active');
     }
 
-    function giveFood() {
-        if (credits >= 50 && hunger < 100) {
-            credits -= 50; hunger = Math.min(100, hunger + 25);
-            tg.HapticFeedback.notificationOccurred('success'); update();
-        } else { tg.showAlert(hunger >= 100 ? "Pet is full!" : "Need 50 credits!"); }
+    function buy(item) {
+        if (credits >= item.price) {
+            credits -= item.price; inv.push(item);
+            tg.HapticFeedback.notificationOccurred('success'); save();
+        } else { tg.showAlert("Insufficient Credits!"); }
     }
 
-    setInterval(() => { if(hunger > 0) { hunger -= 1; update(); } }, 60000);
-
-    function buy(obj) {
-        if (credits >= obj.price) {
-            credits -= obj.price; inventory.push(obj);
-            tg.HapticFeedback.notificationOccurred('success'); update();
-        } else { tg.showAlert("Need more credits!"); }
+    function equipPet(id) {
+        const p = inv.find(i => i.id === id);
+        if (p && p.type === 'pet') { activePet = p; save(); }
     }
 
-    function equip(id) {
-        const p = inventory.find(i => i.id === id);
-        if (p && p.type === 'pet') { activePet = p; update(); tg.showPopup({message: `Equipped ${p.name}`}); }
-    }
-
-    function redeemCode() {
-        const val = document.getElementById('code-in').value.toUpperCase();
-        if (val === "CYBER2026" && !localStorage.getItem('v_used')) {
-            credits += 2500; localStorage.setItem('v_used', 'true');
-            tg.showPopup({message: "Success! +2,500 PTS"}); update();
-        } else { tg.showAlert("Code invalid or used."); }
-    }
-
+    // --- GAMES ---
     function openGame(type) {
-        const stage = document.getElementById('screen-content');
-        document.getElementById('game-screen').style.display = 'flex';
-        stage.innerHTML = "";
+        const box = document.getElementById('game-content');
+        document.getElementById('game-overlay').style.display = 'flex';
+        box.innerHTML = "";
 
         if (type === 'wheel') {
-            stage.innerHTML = `<div class="wheel-shell"><div class="wheel-arrow"></div><canvas id="wheel-canvas" width="600" height="600"></canvas></div><button class="btn" style="width:220px; margin-top:20px;" onclick="spin()">SPIN (250 PTS)</button>`;
+            box.innerHTML = `<div class="canvas-container"><div class="wheel-pin"></div><canvas id="wheel-canvas" width="600" height="600" style="width:280px; height:280px;"></canvas></div><button class="btn" style="width:200px; margin-top:20px;" onclick="spinWheel()">SPIN (250 PTS)</button>`;
             drawWheel();
         } else if (type === 'tap') {
-            stage.innerHTML = `<div id="node" style="width:180px; height:180px; border-radius:50%; border:5px solid var(--cyan); display:flex; align-items:center; justify-content:center; font-size:4rem; box-shadow:0 0 30px var(--cyan);"><i class="fa-solid fa-bolt"></i></div><h3 style="margin-top:25px;">MINING CORE</h3>`;
-            document.getElementById('node').onclick = () => {
-                let m = inventory.some(i => i.id === 'u1') ? 50 : 10;
-                credits += m; update(); tg.HapticFeedback.impactOccurred('medium');
+            box.innerHTML = `<div id="core-orb" style="width:160px; height:160px; border-radius:50%; border:5px solid var(--cyan); display:flex; align-items:center; justify-content:center; font-size:4rem; box-shadow:0 0 30px var(--cyan);"><i class="fa-solid fa-bolt"></i></div><h3 style="margin-top:25px;">MINING CORE</h3>`;
+            document.getElementById('core-orb').onclick = () => {
+                let power = (inv.some(i => i.id === 'u1') ? 50 : 10) + (lvl * 5);
+                credits += power; addXP(5); tg.HapticFeedback.impactOccurred('light');
             };
         } else if (type === 'plinko') {
-            stage.innerHTML = `<h3>PLINKO SYSTEM</h3><p>Physics Engine Loading...</p><button class="btn" onclick="credits+=150;update();tg.showAlert('Beta: 150 PTS added');">DROP (BETA)</button>`;
+            box.innerHTML = `<canvas id="plinko-canvas" width="300" height="380"></canvas><button class="btn" onclick="dropBall()" style="width:180px; margin-top:15px;">DROP (100 PTS)</button>`;
+            initPlinko();
         }
     }
 
-    const WHEEL_DATA = ["500", "0", "VOUCHER", "0", "2000", "100", "ZERO", "250"];
+    // Wheel
+    const SLOTS = ["500", "0", "VOUCHER", "100", "2000", "ZERO", "1000", "0"];
     function drawWheel() {
         const ctx = document.getElementById('wheel-canvas').getContext('2d');
-        const cols = ["#a855f7", "#1e293b", "#fbbf24", "#1e293b", "#22d3ee", "#f472b6", "#1e293b", "#4ade80"];
+        const colors = ["#a855f7", "#1e293b", "#fbbf24", "#1e293b", "#22d3ee", "#1e293b", "#f472b6", "#1e293b"];
         for (let i = 0; i < 8; i++) {
             ctx.beginPath(); ctx.moveTo(300, 300); ctx.arc(300, 300, 300, i * Math.PI/4, (i+1) * Math.PI/4);
-            ctx.fillStyle = cols[i]; ctx.fill();
-            ctx.save(); ctx.translate(300, 300); ctx.rotate(i * Math.PI/4 + Math.PI/8);
-            ctx.fillStyle = "white"; ctx.font = "bold 40px sans-serif"; ctx.fillText(WHEEL_DATA[i], 120, 15); ctx.restore();
+            ctx.fillStyle = colors[i]; ctx.fill(); ctx.save(); ctx.translate(300, 300); ctx.rotate(i * Math.PI/4 + Math.PI/8);
+            ctx.fillStyle = "white"; ctx.font = "bold 40px sans-serif"; ctx.fillText(SLOTS[i], 120, 15); ctx.restore();
         }
     }
 
-    function spin() {
+    function spinWheel() {
         if (spinning || credits < 250) return;
-        credits -= 250; update(); spinning = true;
+        credits -= 250; spinning = true; save();
         const deg = 3600 + Math.floor(Math.random() * 360);
         document.getElementById('wheel-canvas').style.transform = `rotate(${deg}deg)`;
         setTimeout(() => {
             spinning = false;
-            const res = WHEEL_DATA[7 - Math.floor((deg % 360) / 45)];
-            if (res === "ZERO") { if(!inventory.some(i => i.id === 'u2')) credits = Math.max(0, credits - 1000); tg.showAlert("HIT ZERO! Protection shield saves you if owned."); }
-            else if (res === "VOUCHER") { credits += 5000; tg.showAlert("JACKPOT! +5,000 PTS"); }
-            else { credits += parseInt(res); }
-            update();
+            const res = SLOTS[7 - Math.floor((deg % 360) / 45)];
+            if (res === "ZERO") { 
+                if(!inv.some(i => i.id === 'u2')) credits = Math.max(0, credits - 1000);
+                tg.showAlert("ZERO HIT! Protection shield used if owned.");
+            } else if (res === "VOUCHER") { credits += 5000; tg.showAlert("VOUCHER WIN! +5,000 Credits"); }
+            else { credits += parseInt(res); addXP(20); }
+            save();
         }, 4000);
     }
 
-    function renderLists() {
-        document.getElementById('pet-grid').innerHTML = PETS.map(p => {
-            const has = inventory.some(i => i.id === p.id);
+    // Plinko Physics
+    let pCtx, balls = [], pins = [];
+    function initPlinko() {
+        const cvs = document.getElementById('plinko-canvas'); pCtx = cvs.getContext('2d');
+        pins = []; balls = [];
+        for (let r = 2; r < 10; r++) { for (let i = 0; i <= r; i++) pins.push({ x: 150 + (i - r/2) * 28, y: 50 + r * 32 }); }
+        renderPlinko();
+    }
+    function dropBall() {
+        if (credits < 100) return; credits -= 100; save();
+        balls.push({ x: 150 + (Math.random()-0.5)*10, y: 20, vx: 0, vy: 2 });
+    }
+    function renderPlinko() {
+        if (!document.getElementById('plinko-canvas')) return;
+        pCtx.fillStyle = "#020617"; pCtx.fillRect(0,0,300,400);
+        pCtx.fillStyle = "#475569"; pins.forEach(p => { pCtx.beginPath(); pCtx.arc(p.x, p.y, 3, 0, 7); pCtx.fill(); });
+        pCtx.fillStyle = "#f472b6";
+        balls.forEach((b, i) => {
+            b.vy += 0.25; b.x += b.vx; b.y += b.vy;
+            pins.forEach(p => { if (Math.hypot(b.x-p.x, b.y-p.y) < 10) { b.vy *= -0.4; b.vx = (b.x-p.x)*0.8; } });
+            pCtx.beginPath(); pCtx.arc(b.x, b.y, 6, 0, 7); pCtx.fill();
+            if (b.y > 380) { balls.splice(i,1); credits += 300; addXP(15); save(); }
+        });
+        requestAnimationFrame(renderPlinko);
+    }
+
+    function renderShop() {
+        document.getElementById('grid-pets').innerHTML = PET_SHOP.map(p => {
+            const has = inv.some(i => i.id === p.id);
             return `<div class="tile" style="flex-direction:column; text-align:center;">
-                <div style="font-size:2.5rem;">${p.icon}</div>
-                <div style="font-size:0.8rem; font-weight:bold;">${p.name}</div>
-                <button class="btn ${has?'owned':''}" onclick="${has?'':`buy(${JSON.stringify(p)})`}" style="padding:6px; font-size:0.7rem;">${has?'OWNED':p.price}</button>
+                <div style="font-size:2rem;">${p.icon}</div>
+                <div style="font-size:0.7rem; font-weight:bold;">${p.name}</div>
+                <button class="btn" style="padding:6px; font-size:0.6rem;" onclick="${has?'':`buy(${JSON.stringify(p)})`}" ${has?'disabled':''}>${has?'OWNED':p.price}</button>
             </div>`;
         }).join('');
-
-        document.getElementById('item-grid').innerHTML = ITEMS.map(i => {
-            const has = inventory.some(item => item.id === i.id);
+        document.getElementById('grid-items').innerHTML = ITEM_SHOP.map(i => {
+            const has = inv.some(it => it.id === i.id);
             return `<div class="tile" style="flex-direction:column; text-align:center;">
                 <i class="fa-solid ${i.icon}" style="color:var(--cyan); font-size:1.5rem;"></i>
-                <div style="font-size:0.7rem; font-weight:bold;">${i.name}</div>
-                <button class="btn ${has?'owned':''}" onclick="${has?'':`buy(${JSON.stringify(i)})`}" style="padding:6px; font-size:0.7rem;">${has?'ACTIVE':i.price}</button>
+                <div style="font-size:0.6rem; font-weight:bold;">${i.name}</div>
+                <button class="btn" style="padding:6px; font-size:0.6rem;" onclick="${has?'':`buy(${JSON.stringify(i)})`}" ${has?'disabled':''}>${has?'ACTIVE':i.price}</button>
             </div>`;
         }).join('');
+    }
 
-        document.getElementById('gear-grid').innerHTML = inventory.map(item => `
-            <div class="tile" style="flex-direction:column; text-align:center; border-color:var(--pink);">
-                <div style="font-size:2rem;">${item.icon.startsWith('fa') ? `<i class="fa-solid ${item.icon}"></i>` : item.icon}</div>
-                <div style="font-size:0.7rem; font-weight:bold;">${item.name}</div>
-                ${item.type === 'pet' ? `<button class="btn" style="padding:5px; font-size:0.6rem;" onclick="equip('${item.id}')">EQUIP</button>` : ''}
+    function renderGear() {
+        document.getElementById('grid-inv').innerHTML = inv.map(item => `
+            <div class="tile" style="flex-direction:column; text-align:center; border-color:var(--pink)">
+                <div style="font-size:1.5rem;">${item.icon.startsWith('fa') ? `<i class="fa-solid ${item.icon}"></i>` : item.icon}</div>
+                <div style="font-size:0.6rem; font-weight:bold;">${item.name}</div>
+                ${item.type === 'pet' ? `<button class="btn" style="padding:4px; font-size:0.6rem;" onclick="equipPet('${item.id}')">EQUIP</button>` : ''}
             </div>
         `).join('');
     }
 
-    function exitGame() { document.getElementById('game-screen').style.display = 'none'; update(); }
+    function closeGame() { document.getElementById('game-overlay').style.display = 'none'; save(); }
 
     tg.expand();
-    document.getElementById('display-user').innerText = `@${tg.initDataUnsafe.user?.username || 'GUEST'}`;
-    update();
+    document.getElementById('user-tag').innerText = `@${tg.initDataUnsafe.user?.username || 'GUEST'}`;
+    save();
 </script>
 </body>
 </html>
